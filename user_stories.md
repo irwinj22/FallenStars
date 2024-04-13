@@ -13,9 +13,14 @@ Possible ideas to further complicate/deviate from Potion Exchange:
 1. Purchasing items from customers to add to the supply
 2. Rent out items and have them returned after a sum amount of ticks
 3. Sales! Have prices lowered on specific days
+4. Exception: Bundle purchasing
+Certain combinations of products lower their combined price. This discounting will be
+applied automatically during the checkout process. 
+5. Exception: Different currencies
+Customers from different planets may not use the same currency as our platform. In this 
+circumstance, a conversion will be automatically applied during checkout.
+6. Exception: Ability-verification
+Certain items are only available to properly-trained customers. Competence-checking will
+occur for these specific items before the completion of sale. 
 
-4. Bundle purchasing: certain combinations of products lower their combined price
-5. Different currencies: customers from different planets may not use the same currency (?)
-6. Ability-verification: certain items are only available to properly-trained customers. This 
-competence needs to be checked before completion of sale. 
 
