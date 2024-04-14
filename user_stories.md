@@ -6,6 +6,9 @@
 5. As a mighty ogre, I want special-made protective armor so that I can defend unusally my large frame from dangerous enemies. 
 6. As a desert-dwelling nomad, I want a weather-resistant compass so that I can navigate my perilous arid terrain. 
 7. As a wise wizard, I want an omniscient orb so that I can spy on my enemies and protect my coven.
+8. As a prideful barbarian, I want bright, gleaming armor so enemies will fear my strength.
+9. As a skilled archer, I want poisonous arrows so I can deal more damage to my enemies.
+10. As a bard, I want new instruments so I can motivate and revigorate my companions more effectively.
 
 ## Exceptions
 
@@ -21,6 +24,10 @@ Customers from different planets may not use the same currency as our platform. 
 circumstance, a conversion will be automatically applied during checkout.
 6. Exception: Ability-verification
 Certain items are only available to properly-trained customers. Competence-checking will
-occur for these specific items before the completion of sale. 
-
-
+occur for these specific items before the completion of sale.
+7. Exception: Insufficient funds received
+Some customers are sneaky and may attempt to buy items for less than they are being sold for. Our shop will automatically detect if someone does not provide enough currency for a purchase.
+8. Exception: Attempted to sell a low-quality item
+Some items may deteriorate after being in our inventory for too long. If we try to sell something that is faulty, we will be notified to replace the item with a new one or at a discount.
+9. Exception: Item is over-priced
+Customers may know other shops that sell what they want at lower prices. Our shop will provide a discount to individuals who do not want to buy items because they know they can find better deals elsewhere.
