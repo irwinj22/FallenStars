@@ -18,24 +18,24 @@ Possible ideas to further complicate/deviate from Potion Exchange:
 1. Purchasing items from customers to add to the supply
 2. Rent out items and have them returned after a sum amount of ticks
 3. Sales! Have prices lowered on specific days
-4. Exception: Bundle purchasing
+4. Exception: Bundle purchasing:
 Certain combinations of products lower their combined price. This discounting will be
 applied automatically during the checkout process.
-5. Exception: Different currencies
+5. Exception: Different currencies:
 Customers from different planets may not use the same currency as our platform. In this 
 circumstance, a conversion will be automatically applied during checkout.
-6. Exception: Ability-verification
+6. Exception: Ability-verification:
 Certain items are only available to properly-trained customers. Competence-checking will
 occur for these specific items before the completion of sale.
-7. Exception: Insufficient funds received
+7. Exception: Insufficient funds received:
 Some customers are sneaky and may attempt to buy items for less than they are being sold for. Our shop will automatically detect if someone does not provide enough currency for a purchase.
-8. Exception: Attempted to sell a low-quality item
+8. Exception: Attempted to sell a low-quality item:
 Some items may deteriorate after being in our inventory for too long. If we try to sell something that is faulty, we will be notified to replace the item with a new one or at a discount.
-9. Exception: Item is over-priced
+9. Exception: Item is over-priced:
 Customers may know other shops that sell what they want at lower prices. Our shop will provide a discount to individuals who do not want to buy items because they know they can find better deals elsewhere.
-10. Exception: Rent overdue
+10. Exception: Rent overdue:
 Customers who chose to rent items may try to take advantage of our rent policy and hold items for longer than what their rent says. Our store will inforce an interest rate policy as late fees.
-11. Exception: Low-quality item return
+11. Exception: Low-quality item return:
 Customers who rent our equipment may missue/damage it. If an item is returned to us in a poor condition under a given threshold, the customer will be charged extra to replace the item.
-12. Exception: Out-of-Stock
+12. Exception: Out-of-Stock:
 If a customer attempts to buy an item, but we do not have any in stock, then we will be notified to purchase more of that item.
