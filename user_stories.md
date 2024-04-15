@@ -9,6 +9,8 @@
 8. As a prideful barbarian, I want bright, gleaming armor so enemies will fear my strength.
 9. As a skilled archer, I want poisonous arrows so I can deal more damage to my enemies.
 10. As a bard, I want new instruments so I can motivate and revigorate my companions more effectively.
+11. As a merhcant, I want a small, easily concealable dagger to be able to defend my shop from any potential theives.
+12. As a shepherd, I want a powerful staff that I can use to both herd my flocks and defeat any threatening predators.
 
 ## Exceptions
 
@@ -31,3 +33,9 @@ Some customers are sneaky and may attempt to buy items for less than they are be
 Some items may deteriorate after being in our inventory for too long. If we try to sell something that is faulty, we will be notified to replace the item with a new one or at a discount.
 9. Exception: Item is over-priced
 Customers may know other shops that sell what they want at lower prices. Our shop will provide a discount to individuals who do not want to buy items because they know they can find better deals elsewhere.
+10. Exception: Rent overdue
+Customers who chose to rent items may try to take advantage of our rent policy and hold items for longer than what their rent says. Our store will inforce an interest rate policy as late fees.
+11. Exception: Low-quality item return
+Customers who rent our equipment may missue/damage it. If an item is returned to us in a poor condition under a given threshold, the customer will be charged extra to replace the item.
+12. Exception: Out-of-Stock
+If a customer attempts to buy an item, but we do not have any in stock, then we will be notified to purchase more of that item.
