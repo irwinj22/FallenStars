@@ -1,6 +1,6 @@
-## API Specification for FallenStars 
+# API Specification for FallenStars 
 
-# 1. Customer Purchases
+## 1. Customer Purchases
 
 API calls are made in this sequence during customer purchase: 
 1. Get Purchase Catalog
@@ -29,7 +29,7 @@ Presented abilites of purchaser are verified.
 1.6 Checkout (POST)
 Checkout process for cart. 
 
-# 2. Customer Rentals
+## 2. Customer Rentals
 API calls are made in this sequence during customer rentals:
 1. Get Rental Catalog
 2. New Cart
@@ -57,7 +57,7 @@ Presented abilites of renter are verified.
 1.6 Checkout (POST)
 Checkout process for cart.
 
-# 3. Customer Returns
+## 3. Customer Returns
 API calls are made in this sequence during customer returns:
 1. Get Customer Catalog
 2. Evaluate Condition
@@ -76,26 +76,7 @@ Inventory updated with all items that had returnable condition
 3.4 Issue Refund (POST)
 Refund issued to customer
 
-# 4. Inventory
-API calls are made in this sequence during Inventory: 
-1. Get Complete Inventory
-2. Create Purchase Plan
-3. Execute Purchase Plan
-4. Update Inventory
-
-4.1 Get Complete Inventory (GET)
-Complete Inventory of shop is retrieved
-
-4.2 Create Purchase Plan (POST)
-Purchase plan is created based on current inventory
-
-4.3 Execute Purchase Plan (POST)
-Purchase plan executed, newly purchased items are returned
-
-4.4. Update Inventory (POST)
-Upon return of newly purchased items, inventory is updated. 
-
-# 5. Admin
-# TODO!!
+## 5. Admin
+### TODO!!
 Self-audit (?)
 
