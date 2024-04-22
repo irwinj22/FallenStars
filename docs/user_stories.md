@@ -11,8 +11,6 @@
 10. As a bard, I want new instruments so I can motivate and revigorate my companions more effectively.
 11. As a merhcant, I want a small, easily concealable dagger to be able to defend my shop from any potential theives.
 12. As a shepherd, I want a powerful staff that I can use to both herd my flocks and defeat any threatening predators.
-11. As a merhcant, I want a small, easily concealable dagger to be able to defend my shop from any potential theives.
-12. As a shepherd, I want a powerful staff that I can use to both herd my flocks and defeat any threatening predators.
 
 ## Exceptions
 
