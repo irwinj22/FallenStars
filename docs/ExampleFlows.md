@@ -16,3 +16,13 @@ Nicholas the Dawg wants to buy a new sword to show off to his friends. So, he as
 3. Nicholas finally calls POST /carts/1337/checkout to buy the two sharpened katanas for 70 gold each, totalling to 140 gold.
 
 Nicholas is excited to brag about his new katanas.
+
+
+Example Flow #3:
+
+Gabe the Babe has an internship as a part-time shepherd for the summer. So, he asks to see the rental catalog. He sees we are offering 3 concealed daggers for 50 gold each and 1 enchanted staff for 90 gold. Gabe wants the enchanted staff. So, he:
+1. starts by calling POST /carts to get a new cart with ID 6666.
+2. Then he calls POST /carts/6666/items/enchanted_staff and passes in a quantity of 1
+3. The shop then calls POST /carts/6666/items/enchanted_staff/rental_period/100 updates the duration of the rental to be 100 ticks
+4. Gabe calls POST /carts/6666/checkout to purchase the enchanted staff for 90 gold
+5. Once Gabe's rent is over, the shop snatches the enchanted staff back by calling /inventory/returns
