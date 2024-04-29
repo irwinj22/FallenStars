@@ -12,8 +12,39 @@ API calls are made in this sequence during customer purchase:
 1.1 Get Purchase Catalog (GET)   
 Retrives catalog of purchasable items. 
 
+**Response**:
+
+```json
+[
+    {
+        "sku": "string", 
+        "name": "string",
+        "quantity": "integer",
+        "price": "integer", 
+        "modifiers": ["string", "string", "string"]
+    }
+]
+```
+
 1.2 New Cart (POST)   
 Creates new cart for specified customer. 
+
+**Request**:
+
+```json
+{
+  "customer_name": "string",
+  "character_class": "string",
+  "level": "number"
+}
+```
+
+**Response**:
+```json
+{
+  "cart_id": "string"
+}
+```
 
 1.3 Add Item to Cart (POST)    
 Updates quantity of item in cart. 
