@@ -21,7 +21,7 @@ Retrives catalog of purchasable items.
         "name": "string",
         "quantity": "integer",
         "price": "integer", 
-        "modifiers": ["string", "string", "string"]
+        "modifiers": ["s", "t", "r", ...]
     }
 ]
 ```
@@ -40,6 +40,7 @@ Creates new cart for specified customer.
 ```
 
 **Response**:
+
 ```json
 {
   "cart_id": "string"
@@ -47,13 +48,54 @@ Creates new cart for specified customer.
 ```
 
 1.3 Add Item to Cart (POST)    
-Updates quantity of item in cart. 
+Updates quantity of item in cart.
+
+**Request**:
+
+```json
+{
+  "quantity": "integer"
+}
+```
+
+**Response**:
+
+```json
+{
+    "success": "boolean"
+}
+```
 
 1.4 Add Modification Plan (POST)    
 Add modification(s) to specific item(s) within cart.
 
+**Request**:
+
+```json
+{
+  "modification_plan": ["s", "t", "r", ...]
+}
+```
+
+**Response**:
+
+```json
+{
+    "success": "boolean"
+}
+```
+
 1.5 Checkout (POST)   
 Checkout process for cart. 
+
+**Response**:
+
+```json
+{
+    "total_potions_bought": "integer",
+    "total_gold_paid": "integer"
+}
+```
 
 ## 2. Customer Rentals   
 API calls are made in this sequence during customer rentals:
