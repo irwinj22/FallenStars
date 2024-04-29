@@ -218,14 +218,62 @@ API calls are made in this sequence during customer returns:
 3.1 Get Cusomter Catalog (GET)   
 Customers presents list of items (and their conditions) to be evaluated for possibility of return. 
 
+**Response**:
+
+```json
+{
+    "to_be_evaluated": [["s", "condition"], ["t", "condition"], ["r", "condition"], ...]
+}
+```
+
 3.2 Evaluate Condition ()   
 Condition of each item in customer catalogue is evaluated. 
+
+**Request**:
+
+```json
+{
+    "to_be_evaluated": [["s", "condition"], ["t", "condition"], ["r", "condition"], ...]
+}
+```
+
+**Response**:
+
+```json
+{
+    "success": [b, o, o, l, ...]
+}
+```
 
 3.3. Update Inventory (POST)   
 Inventory updated with all items that had returnable condition
 
+**Response**:
+
+```json
+{
+    "good_condition": ["s", "t", "r", ...]
+}
+```
+
 3.4 Issue Refund (POST)   
 Refund issued to customer
+
+**Request**:
+
+```json
+{
+    "refund_amount": integer
+}
+```
+
+**Response**:
+
+```json
+{
+    "success": [b, o, o, l, ...]
+}
+```
 
 ##  4. Inventory
 API calls are made in this sequence during Inventory: 
