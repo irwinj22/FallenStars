@@ -193,6 +193,7 @@ Checkout process for cart.
 ```json
 {
     "items_and_amount_bought": ["s", "t", "r", "..."]
+    "checkout_time": "integer"
     "credits_paid": "integer"
 }
 ```
