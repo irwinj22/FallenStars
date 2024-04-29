@@ -21,7 +21,7 @@ Retrives catalog of purchasable items.
         "name": "string",
         "quantity": "integer",
         "price": "integer", 
-        "modifiers": ["s", "t", "r", ...]
+        "modifiers": ["s", "t", "r", "..."]
     }
 ]
 ```
@@ -73,7 +73,7 @@ Add modification(s) to specific item(s) within cart.
 
 ```json
 {
-  "modification_plan": ["s", "t", "r", ...]
+  "modification_plan": ["s", "t", "r", "..."]
 }
 ```
 
@@ -92,7 +92,7 @@ Checkout process for cart.
 
 ```json
 {
-    "items_and_amount_bought": ["s", "t", "r", ...]
+    "items_and_amount_bought": ["s", "t", "r", "..."]
     "credits_paid": "integer"
 }
 ```
@@ -118,7 +118,7 @@ Retrives catalog of rentable items.
         "name": "string",
         "quantity": "integer",
         "price": "integer", 
-        "modifiers": ["s", "t", "r", ...]
+        "modifiers": ["s", "t", "r", "..."]
         "expiry_time": "integer"
     }
 ]
@@ -192,7 +192,7 @@ Checkout process for cart.
 
 ```json
 {
-    "items_and_amount_bought": ["s", "t", "r", ...]
+    "items_and_amount_bought": ["s", "t", "r", "..."]
     "credits_paid": "integer"
 }
 ```
@@ -222,7 +222,7 @@ Customers presents list of items (and their conditions) to be evaluated for poss
 
 ```json
 {
-    "to_be_evaluated": [["s", "condition"], ["t", "condition"], ["r", "condition"], ...]
+    "to_be_evaluated": [["s", "condition"], ["t", "condition"], ["r", "condition"], ["..."], "condition"]
 }
 ```
 
@@ -233,7 +233,7 @@ Condition of each item in customer catalogue is evaluated.
 
 ```json
 {
-    "to_be_evaluated": [["s", "condition"], ["t", "condition"], ["r", "condition"], ...]
+    "to_be_evaluated": [["s", "condition"], ["t", "condition"], ["r", "condition"], "..."]
 }
 ```
 
@@ -263,7 +263,7 @@ Refund issued to customer
 
 ```json
 {
-    "refund_amount": integer
+    "refund_amount": "integer"
 }
 ```
 
