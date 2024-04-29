@@ -92,8 +92,8 @@ Checkout process for cart.
 
 ```json
 {
-    "total_potions_bought": "integer",
-    "total_gold_paid": "integer"
+    "items_and_amount_bought": ["s", "t", "r", ...]
+    "credits_paid": "integer"
 }
 ```
 
@@ -106,23 +106,107 @@ API calls are made in this sequence during customer rentals:
 5. Checkout
 6. Return
 
-1.1 Get Rental Catalog (GET)   
+2.1 Get Rental Catalog (GET)   
 Retrives catalog of rentable items. 
 
-1.2 New Cart (POST)   
+**Response**:
+
+```json
+[
+    {
+        "sku": "string", 
+        "name": "string",
+        "quantity": "integer",
+        "price": "integer", 
+        "modifiers": ["s", "t", "r", ...]
+        "expiry_time": "integer"
+    }
+]
+```
+
+2.2 New Cart (POST)   
 Creates new cart for specified customer. 
 
-1.3 Add Item to Cart (POST)   
+**Request**:
+
+```json
+{
+  "customer_name": "string",
+  "character_class": "string",
+  "level": "number"
+}
+```
+
+**Response**:
+
+```json
+{
+  "cart_id": "string"
+}
+```
+
+2.3 Add Item to Cart (POST)   
 Updates quantity of item in cart. 
 
-1.4 Rental Duration (POST)   
+**Request**:
+
+```json
+{
+  "quantity": "integer"
+}
+```
+
+**Response**:
+
+```json
+{
+    "success": "boolean"
+}
+```
+
+2.4 Rental Duration (POST)   
 Updates duration of rental for specified item in cart. 
 
-1.5 Checkout (POST)   
+**Request**:
+
+```json
+{
+  "expiry_time": "integer"
+}
+```
+
+**Response**:
+
+```json
+{
+    "success": "boolean"
+}
+```
+
+
+
+2.5 Checkout (POST)   
 Checkout process for cart.
 
-1.6 Return (GET)
+**Response**:
+
+```json
+{
+    "items_and_amount_bought": ["s", "t", "r", ...]
+    "credits_paid": "integer"
+}
+```
+
+2.6 Return (GET)
 Item is returned after a certain number of ticks.
+
+**Response**:
+
+```json
+{
+    "success": "boolean"
+}
+```
 
 ## 3. Customer Returns
 API calls are made in this sequence during customer returns:
