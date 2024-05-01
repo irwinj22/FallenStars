@@ -54,6 +54,7 @@ Updates quantity of item in cart.
 
 ```json
 {
+  
   "quantity": "integer"
 }
 ```
@@ -279,21 +280,130 @@ Refund issued to customer
 ##  4. Inventory
 API calls are made in this sequence during Inventory: 
 1. Get Complete Inventory
-2. Create Purchase Plan
-3. Execute Purchase Plan
-4. Update Inventory
+2. Create Weapon Purchase Plan
+3. Create Armor Purchase Plan
+4. Create Item Purchase Plan
+5. Execute Weapon Purchases
+6. Execute Misc Purchases
 
 4.1 Get Complete Inventory (GET)   
 Complete Inventory of shop is retrieved
 
-4.2 Create Purchase Plan (POST)   
-Purchase plan is created based on current inventory
+**Response**:
 
-4.3 Execute Purchase Plan (POST)   
+```json
+{
+    "num_weaponry": "integer",
+    "num_armor": "integer",
+    "num_items": "integer",
+    "num_rental": "integer",
+    "credits": "integer"
+}
+```
+
+4.2 Create Weapon Purchase Plan (POST)   
+Purchase plan is created based on current inventory.
+
+**Request**
+```json
+[
+    {
+        "sku": "string",
+        "name": "string",
+        "type": "string",
+        "damage": "string",
+        "price": "integer",
+        "quantity": "integer"
+    }
+]
+```
+**Response**
+```json
+[
+    {
+        "sku": "string", /*Needs to match a sku in the request catalog */
+        "quantity": "integer" /*Needs to be equal or less than in request catalog */
+    }
+]
+```
+
+4.3 Create Armor Purchase Plan (POST)
+Purchase plan is created based on current inventory. Since weapons have an additional parameter, they are separate from armor and items.
+**Request**
+```json
+[
+    {
+        "sku": "string",
+        "name": "string",
+        "type": "string",
+        "price": "integer",
+        "quantity": "integer"
+    }
+]
+```
+**Response**
+```json
+[
+    {
+        "sku": "string", /*Needs to match a sku in the request catalog */
+        "quantity": "integer" /*Needs to be equal or less than in request catalog */
+    }
+]
+```
+
+4.4 Item Purchase Plans (POST)
+**Request**
+```json
+[
+    {
+        "sku": "string",
+        "name": "string",
+        "type": "string",
+        "price": "integer",
+        "quantity": "integer"
+    }
+]
+```
+**Response**
+```json
+[
+    {
+        "sku": "string", /*Needs to match a sku in the request catalog */
+        "quantity": "integer" /*Needs to be equal or less than in request catalog */
+    }
+]
+```
+
+4.5 Execute Weapon Purchase (POST)   
 Purchase plan executed, newly purchased items are returned
+**Request** 
+```json
+[
+    {
+        "sku": "string", /*All lines consisting of items that passed purchase plan */
+        "name": "string",
+        "type": "string",
+        "damage": "string",
+        "price": "integer",
+        "quantity": "integer"
+    }
+]
+```
 
-4.4. Update Inventory (POST)   
-Upon return of newly purchased items, inventory is updated. 
+4.6 Execute Misc. Purchase (POST)
+Purchase plan executed, newly purchased items are returned
+**Request** 
+```json
+[
+    {
+        "sku": "string", /*All lines consisting of items that passed purchase plan */
+        "name": "string",
+        "type": "string",
+        "price": "integer",
+        "quantity": "integer"
+    }
+]
+```
 
 ## 5. Admin
 1. Self-audit
@@ -301,6 +411,16 @@ Upon return of newly purchased items, inventory is updated.
 
 5.1 Self-audit (GET)
 Return database numbers for easy readability and to test expected values.
+**Response**
+```json
+{
+    "num_weapons": "integer",
+    "num_armor": "integer",
+    "num_items": "integer",
+    "num_mods": "integer",
+    "credits": "integer"
+}
+```
 
 5.2 Reset ()
 Set all values to default, clear out all customer info.
@@ -311,30 +431,112 @@ Set all values to default, clear out all customer info.
 
 6.1 Modification Plan (POST)
 Collect catalog for modifications and add attributes as needed according to the given plan.
+**Request**
+```json
+[
+    {
+        "sku": "string",
+        "name": "string",
+        "compatibility": "string",
+        "price": "integer",
+        "quantity": "integer"
+    }
+]
+```
+**Response**
+```json
+[
+    {
+        "sku": "string", /*Needs to match a sku in the request catalog */
+        "quantity": "integer" /*Needs to be equal or less than in request catalog */
+    }
+]
+```
 
 6.2 Modification Deliverance (POST)
 Add modifications to current catalog items where applicable. 
+**Request**
+```json
+[
+    {
+        "sku": "string",
+        "name": "string",
+        "compatibility": "string",
+        "price": "integer",
+        "quantity": "integer"
+    }
+]
+```
 
 ## 7. Ability Verifier
 1. Group Customers
-2. Deliver Group
 
 7.1 Group Customers (POST)
 Create groups by group plan, splitting customers by class and level.
-
-7.2 Deliver Group (Post)
-Pass in customer JSON list and pass out array of arrays.
+**Response**
+```json
+[
+    {
+        "name": "string",
+        "class": "string",
+        "level": "string"
+    }
+]
+```
 
 ## 8 Catalog 
-1. Filter
-2. Sort 
-3. Get
+1. Filter 
+2. Get Weapons
+3. Get Armor
+4. Get Items
 
-8.1 Filter (GET)
+8.1 Filter (POST)
 Filter items that are too old to sell to reduce returns.
 
-8.2 Sort (GET)
-Move items into one of three groups: weaponry, armor, and trinket.
+8.2 Get Weapons (GET)
+Returns the updated weapons catalog for other endpoints.
+**Request** 
+```json
+[
+    {
+        "sku": "string",
+        "name": "string",
+        "type": "string",
+        "damage": "string",
+        "price": "integer",
+        "quantity": "integer"
+    }
+]
+```
 
-8.3 Get (GET)
-Returns the updated catalog for other endpoints.
+8.3 Get Armor (GET)
+Returns the updated armor catalog for other endpoints.
+**Request** 
+```json
+[
+    {
+        "sku": "string", 
+        "name": "string",
+        "type": "string",
+        "price": "integer",
+        "quantity": "integer"
+    }
+]
+```
+
+8.4 Get Items (GET)
+Returns the updated items catalog for other endpoints.
+**Request** 
+```json
+[
+    {
+        "sku": "string", 
+        "name": "string",
+        "type": "string",
+        "price": "integer",
+        "quantity": "integer"
+    }
+]
+```
+
+
