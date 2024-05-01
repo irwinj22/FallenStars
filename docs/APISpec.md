@@ -224,7 +224,7 @@ Customers presents list of items (and their conditions) to be evaluated for poss
 
 ```json
 {
-    "to_be_evaluated": [["s", "condition"], ["t", "condition"], ["r", "condition"], ["..."], "condition"]
+    "to_be_evaluated": [["s", "condition"], ["t", "condition"], ["r", "condition"], ["...", "condition"]]
 }
 ```
 
