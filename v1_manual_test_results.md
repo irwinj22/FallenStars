@@ -10,4 +10,5 @@ curl call looks like:
 curl -X 'GET' \
   'https://centralcoastcauldrons.vercel.app/catalog/' \
   -H 'accept: application/json'
+
 2. The response you received in executing the curl statement.
