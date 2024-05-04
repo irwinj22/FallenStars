@@ -5,6 +5,7 @@ import json
 import logging
 import sys
 from starlette.middleware.cors import CORSMiddleware
+from src.api import items
 
 description = """
 Fallen Stars -- for all your armory needs!
@@ -21,6 +22,7 @@ app = FastAPI(
     },
 )
 
+# TODO: not sure if this is the right origin
 origins = ["https://potion-exchange.vercel.app"]
 
 # app.add_middleware(
@@ -30,6 +32,8 @@ origins = ["https://potion-exchange.vercel.app"]
 #     allow_methods=["GET", "OPTIONS"],
 #     allow_headers=["*"],
 # )
+
+app.include_router(items.router)
 
 
 @app.exception_handler(exceptions.RequestValidationError)
@@ -45,4 +49,4 @@ async def validation_exception_handler(request, exc):
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to Fallen Stars."}
+    return {"message": "Welcome to Fallen Stars, THE premier armory"}
