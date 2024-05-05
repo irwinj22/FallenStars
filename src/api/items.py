@@ -27,8 +27,9 @@ class Weapon (BaseModel):
 def deliver_weapon(delivered_weapons: list[Weapon], order_id: int):
     with db.engine.begin() as connection:
         for weapon in delivered_weapons:
-            weapon_id = connection.execute(sqlalchemy.text("SELECT id FROM weapon_inventory WHERE weapon_inventory.sku = :sku"),[{"sku": weapon.sku}])
-            connection.execute(sqlalchemy.text("INSERT INTO weapon_ledger VALUES(:weapon_id, :change)"),[{"weapon_id": weapon_id, "change": weapon.quantity}])
+            weapon_id = connection.execute(sqlalchemy.text("SELECT id FROM weapon_inventory WHERE weapon_inventory.sku = :sku"),[{"sku": weapon.sku}]).scalar_one()
+            connection.execute(sqlalchemy.text("INSERT INTO weapon_ledger (weapon_id, change) VALUES(:weapon_id, :change)"),[{"weapon_id": weapon_id, "change": weapon.quantity}])
+    return "FUCK YEAH BABYGIRL"
 
 @router.post("/weapon_plan")
 def get_weapon_plan(weapon_catalog: list[Weapon]):
