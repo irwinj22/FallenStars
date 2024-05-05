@@ -12,7 +12,7 @@ def get_weapon_catalog():
                                                       GROUP BY sku, name, type, damage, modifier, price
                                                       """))
 
-        json_str = []
+        json = []
     for row in in_stock:
         if row.total !=0:
             json.append(
