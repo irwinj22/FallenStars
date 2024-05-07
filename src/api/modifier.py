@@ -55,8 +55,6 @@ def get_modify_plan():
             
 
     return []
-    
-    
 
 if __name__ == "__main__":
     print(get_modify_plan())
