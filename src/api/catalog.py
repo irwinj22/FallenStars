@@ -1,6 +1,13 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 import sqlalchemy
 from src import database as db
+from src.api import auth
+
+router = APIRouter(
+    prefix="/catalog",
+    tags=["catalog"],
+    dependencies=[Depends(auth.get_api_key)],
+)
 
 router = APIRouter()
 @router.get("/catalog/", tags=["catalog"])
@@ -12,7 +19,7 @@ def get_weapon_catalog():
                                                       GROUP BY sku, name, type, damage, modifier, price
                                                       """))
 
-        json = []
+    json = []
     for row in in_stock:
         if row.total !=0:
             json.append(

@@ -5,8 +5,6 @@ from src.api import auth
 import sqlalchemy
 from src import database as db
 
-
-
 router = APIRouter(
     prefix="/modifier",
     tags=["modifier"],
@@ -41,7 +39,6 @@ def get_modify_plan():
     Add modifiers to weapons
     """
     with db.engine.begin() as connection:
-
         num_whet = connection.execute(sqlalchemy.text("""SELECT COALESCE(SUM(change), 0) AS num_modifiers
                                                      FROM modifier_ledger
                                                     WHERE sku = :x"""),[{"x": "WHET_STONE"}]).scalar_one()
