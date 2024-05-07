@@ -1,0 +1,25 @@
+List of notes, things TODO ...
+
+1. "Item" Entity not defined properly in supabase table (weapon_inventory, weapon_ledger)
+
+    Per ER diagram, only supposed to have 4 attributes: 
+        a. Id
+        b. Sku
+        c. Modifiers (Foreign Key Reference)
+        d. Name
+        I think it would also make sense to add 
+        e. Cost 
+        (which has already been done)
+
+2. there is inconsistency between ER diagram, codebase, and supabase in naming convention
+
+    ie. "weapon" inventory and ledger in supabase, but those are called "item" in ER and codebase 
+
+3. Currently, our table relies on pre-populated data within the inventory tables to operate, which we have to change ASAP
+
+    see the INSERT statements at the bottom of schema.sqlalchemy
+
+4. Class like "modifer_inventory" with modifier.py should be created for items and then used as parameter for delivered_weapons
+
+
+
