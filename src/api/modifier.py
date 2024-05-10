@@ -5,62 +5,105 @@ from src.api import auth
 import sqlalchemy
 from src import database as db
 
+
+
 router = APIRouter(
     prefix="/modifier",
     tags=["modifier"],
     dependencies=[Depends(auth.get_api_key)],
 )
 
-class Modifier (BaseModel):
+class Modifier(BaseModel):
     sku: str
+    name: str
     type: str
-    price: int
     quantity: int
-
-class ModifierInventory(BaseModel):
-    sku: str
-    quantity: int
+    price: int  
 
 @router.post("/deliver/{order_id}")
-def post_deliver_modifiers(mods_delivered: list[ModifierInventory], order_id: int):
-    """ 
-    Deliver purchased modifications.
-    """
+def post_deliver_modifiers(modifiers_delivered: list[Modifier], order_id: int):
+    """ """
+    print(f"mods delievered: {modifiers_delivered} order_id: {order_id}")
+    with db.engine.begin() as connection:
+        sku_list = []
+        type_list = []
+        mod_dict = []
+        for mod in modifiers_delivered:
+            sku_list.append(mod.sku)
+            type_list.append(mod.type)
+        # query mod info for delivery and the weapon logs to link the mod to the weapon itself
+        mod_list = connection.execute(sqlalchemy.text("""select sku, id as m_id, type 
+                                                      from mod_inventory where sku in :sku_list"""),
+                                                      [{"sku_list": tuple(sku_list)}])
+        weapon_list = connection.execute(sqlalchemy.text("""select id, w_id as bw_id, m_id, type 
+                                                         from w_log where m_id is null and type in :type_list"""),
+                                                         [{"type_list": tuple(type_list)}])
+        armor_list = connection.execute(sqlalchemy.text("""select id, w_id as bw_id, m_id, type 
+                                                         from a_log where m_id is null and type in :type_list"""),
+                                                         [{"type_list": tuple(type_list)}])
+        item_list = connection.execute(sqlalchemy.text("""select id, w_id as bw_id, m_id, type 
+                                                         from i_log where m_id is null and type in :type_list"""),
+                                                         [{"type_list": tuple(type_list)}])
+        thing_dict = [weapon._asdict() for weapon in weapon_list] + [armor._asdict() for armor in armor_list] + [item._asdict() for item in item_list]
+        weapon_type = [w["type"] for w in weapon_list]
+        armor_type = [a["type"] for a in armor_list]
+        item_type = [i["type"] for i in item_list]
+        for mod in mod_list:
+            q = next(m.quantity for m in modifiers_delivered if m.sku == mod.sku) # Quantity of mods to apply
+            for thing in [t for t in thing_dict if t['type'] == mod.type]:
+                thing['m_id'] = mod.m_id # Links all weapons queried such that the m_id column points to a modifier
+                asdict = mod._asdict()
+                asdict['attached'] = thing['bw_id']
+                mod_dict.append(asdict) # Builds a list of dicts to add to the modifier logs that includes what it's attached to
+                q -= 1 
+                if q == 0: break # If you're out of mods to apply, stop!
+            if q != 0:
+                mod_dict += [mod._asdict()] * q
+        if mod_dict != []:
+            connection.execute(db.m_log.insert(), mod_dict)
+        print(thing_dict)
+        weapon_dict = [t for t in thing_dict if t['type'] in weapon_type]
+        armor_dict = [t for t in thing_dict if t['type'] in armor_type]
+        item_dict = [t for t in thing_dict if t['type'] in item_type]
+        if weapon_dict != []:
+            connection.execute(db.w_log.update().where(sqlalchemy.and_(db.w_log.c.m_id == sqlalchemy.null(),db.w_log.c.w_id == sqlalchemy.bindparam('bw_id'))), weapon_dict) 
+        if armor_dict != []:
+            connection.execute(db.a_log.update().where(sqlalchemy.and_(db.a_log.c.m_id == sqlalchemy.null(),db.a_log.c.w_id == sqlalchemy.bindparam('bw_id'))), armor_dict) 
+        if thing_dict != []:
+            connection.execute(db.w_log.update().where(sqlalchemy.and_(db.i_log.c.m_id == sqlalchemy.null(),db.i_log.c.w_id == sqlalchemy.bindparam('bw_id'))), item_dict) 
 
-    print(f"modifications delievered: {mods_delivered} order_id: {order_id}")
 
-    for mod in mods_delivered:
-        with db.engine.begin() as connection:
-            mod_id = connection.execute(sqlalchemy.text("SELECT id FROM mod_inventory WHERE mod_inventory.sku = :sku"),[{"sku": mod.sku}]).scalar_one()
-            connection.execute(sqlalchemy.text("INSERT INTO mod_ledger (mod_id, change) VALUES(:mod_id, :change)"),[{"mod_id": mod_id, "change": mod.quantity}])
-            
     return "OK"
 
 @router.post("/plan")
 def get_modify_plan(modifier_catalog: list[Modifier]):
     """
-    Plan to buy modifications.
+    Add modifiers to weapons
     """
-
     json = []
-
-    # "credits" is purchasing power 
-    with db.engine.begin() as connection:
-        credits = connection.execute(sqlalchemy.text("SELECT COALESCE(SUM(change), 0) FROM credit_ledger")).scalar_one()
-
-
-    # per example flow, want to buy calibration modifier ONLY
     for mod in modifier_catalog:
-        if mod.sku == "CALIBRATION" and credits > (2 * mod.price):
-            json.append(
-                {
-                    "sku": mod.sku,
-                    "quantity": 1
-                }
-            )
-    return json
+        with db.engine.begin() as connection:
+            credits = connection.execute(sqlalchemy.text("SELECT COALESCE(SUM(change), 0) FROM credit_ledger")).scalar_one()
+            weapon_list = connection.execute(sqlalchemy.text("select type, count(id) from w_log where m_id is null order by type")).fetchall()
+            armor_list = connection.execute(sqlalchemy.text("select type, count(id) from a_log where m_id is null order by type")).fetchall()
+            item_list = connection.execute(sqlalchemy.text("select type, count(id) from i_log where m_id is null order by type")).fetchall()
+            mod_list = connection.execute(sqlalchemy.text("select sku from mod_inventory")).fetchall()
+            mod_filter = [m[0] for m in mod_list]
+            all_types = weapon_list + armor_list + item_list
+        for mod in modifier_catalog:
+            qual = next((x for x in all_types if x['type'] == mod.type), None)
+            if qual != None and mod.price < credits and mod.sku in mod_filter:
+                json.append(
+                    {
+                        "sku": mod.sku,
+                        "quantity": min(qual(1), mod.quantity)
+                    }
+                )
+                credits -= mod.price
 
-            
+    return json
+    
+    
 
 if __name__ == "__main__":
     print(get_modify_plan())

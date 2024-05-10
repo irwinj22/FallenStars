@@ -22,4 +22,19 @@ List of notes, things TODO ...
 4. Class like "modifer_inventory" with modifier.py should be created for items and then used as parameter for delivered_weapons
 
 
+--- Explaining the Modifiers 
+1. Weapons with modifiers are designated by their sku. As an example, a pistol is just called 'LASER_PISTOL', whereas 
+the calibrated laser pistol is called 'LASER_PISTOL_CALIBRATED'.
+2. We have a modifier plan based on whatever we decide is a good strategy for buying. That's the easy part.
+3. Delivering the modifier is hard. In the code, the following should occur.
+    a. In our weapon_inventory, we have a list of items that INCLUDE modified items. We need to see if we have any of the 
+    base version available in our weapon_ledger.
+    b. If we do have base versions of weapons, we designate a number of them that will be modified. This means removing
+    that amount of the base version in the weapon_ledger and adding back the same amount of the modified version.
+
+So let's say we have 5 laser pistols, and 3 calibrators went on sale. We buy them all. Once post_deliver_modifiers goes off, 
+we will count the amount of plain laser pistols we have, insert a row into the ledger saying we're going to subtract 3 laser pistols,
+and enter back 3 modified laser pistols.
+
+
 
