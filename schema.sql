@@ -121,6 +121,7 @@
     constraint purchase_items_pkey primary key (id)
   ) tablespace pg_default;
 
+
   """
   DESCRIPTIONS
   Any _log table tracks what we currently have. Each instance of an item has its own row and keeps track of who it is sold to.
