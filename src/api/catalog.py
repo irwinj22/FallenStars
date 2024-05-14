@@ -11,25 +11,87 @@ router = APIRouter(
 
 router = APIRouter()
 @router.get("/catalog/", tags=["catalog"])
-def get_weapon_catalog():
+def get_catalog():
     with db.engine.begin as connection:
-        in_stock = connection.execute(sqlalchemy.text("""SELECT sku, name, type, damage, modifier, price, COALESCE(SUM(change),0) AS total
+        # Set up stock for weapons, armor, and items separately
+        weapons_in_stock = connection.execute(sqlalchemy.text("""SELECT w_log.w_id AS thing_id, weapon_inventory.sku, weapon_inventory.name, weapon_inventory.type, weapon_inventory.damage, mod_inventory.sku AS modifier, weapon_inventory.price, COUNT(w_log.w_id) AS total 
                                                       FROM weapon_inventory
-                                                      JOIN weapon_ledger ON weapon_inventory.id = weapon_id
-                                                      GROUP BY sku, name, type, damage, modifier, price
+                                                      JOIN w_log ON weapon_inventory.id = w_log.w_id
+                                                      JOIN m_log ON m_log.m_id = w_log.m_id
+                                                      JOIN mod_inventory ON mod_inventory.id = m_log.m_id
+                                                      GROUP BY w_log.w_id
+                                                      """))
+        
+        armor_in_stock = connection.execute(sqlalchemy.text("""SELECT a_log.a_id AS thing_id, armor_inventory.sku, armor_inventory.name, armor_inventory.type, armor_inventory.damage, mod_inventory.sku AS modifier, armor_inventory.price, COUNT(a_log.a_id) AS total 
+                                                      FROM armor_inventory
+                                                      JOIN a_log ON armor_inventory.id = a_log.a_id
+                                                      JOIN m_log ON m_log.m_id = w_log.m_id
+                                                      JOIN mod_inventory ON mod_inventory.id = m_log.m_id
+                                                      GROUP BY a_log.a_id
+                                                      """))
+
+        items_in_stock = connection.execute(sqlalchemy.text("""SELECT i_log.i_id AS thing_id, item_inventory.sku, item_inventory.name, item_inventory.type, item_inventory.damage, mod_inventory.sku AS modifier, item_inventory.price, COUNT(i_log.i_id) AS total 
+                                                      FROM item_inventory
+                                                      JOIN i_log ON item_inventory.id = i_log.i_id
+                                                      JOIN m_log ON m_log.m_id = i_log.m_id
+                                                      JOIN mod_inventory ON mod_inventory.id = m_log.m_id
+                                                      GROUP BY i_log.i_id
                                                       """))
 
     json = []
-    for row in in_stock:
+    for row in weapons_in_stock:
+        rental = False
+        if row.thing_id <= 1:
+            rental = True
         if row.total !=0:
             json.append(
                 {
+                    "thing_id": row.thing_id,
                     "sku": row.sku,
                     "name": row.name,
                     "type": row.type,
                     "damage": row.damage,
                     "modifier": row.modifier,
                     "price": row.price,
-                    "quantity": row.total
+                    "quantity": row.total,
+                    "rental": rental
+                }
+            )
+
+    for row in armor_in_stock:
+        rental = False
+        if row.thing_id <= 1:
+            rental = True
+        if row.total !=0:
+            json.append(
+                {
+                    "thing_id": row.thing_id,
+                    "sku": row.sku,
+                    "name": row.name,
+                    "type": row.type,
+                    "damage": row.damage,
+                    "modifier": row.modifier,
+                    "price": row.price,
+                    "quantity": row.total,
+                    "rental": rental
+                }
+            )
+    
+    for row in items_in_stock:
+        rental = False
+        if row.thing_id <= 1:
+            rental = True
+        if row.total !=0:
+            json.append(
+                {
+                    "thing_id": row.thing_id,
+                    "sku": row.sku,
+                    "name": row.name,
+                    "type": row.type,
+                    "damage": row.damage,
+                    "modifier": row.modifier,
+                    "price": row.price,
+                    "quantity": row.total,
+                    "rental": rental
                 }
             )
