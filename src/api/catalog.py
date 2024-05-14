@@ -20,7 +20,7 @@ def get_catalog():
                                                       JOIN m_log ON m_log.m_id = w_log.m_id
                                                       JOIN mod_inventory ON mod_inventory.id = m_log.m_id
                                                       GROUP BY w_log.w_id, weapon_inventory.sku, weapon_inventory.name, weapon_inventory.type, weapon_inventory.damage, mod_inventory.sku, weapon_inventory.price
-                                                      """))
+                                                      """)).fetchall()
         
         armor_in_stock = connection.execute(sqlalchemy.text("""SELECT a_log.a_id AS thing_id, armor_inventory.sku, armor_inventory.name, armor_inventory.type, mod_inventory.sku AS modifier, armor_inventory.price, COUNT(a_log.a_id) AS total 
                                                       FROM armor_inventory
@@ -28,7 +28,7 @@ def get_catalog():
                                                       JOIN m_log ON m_log.m_id = a_log.m_id
                                                       JOIN mod_inventory ON mod_inventory.id = m_log.m_id
                                                       GROUP BY a_log.a_id, armor_inventory.sku, armor_inventory.name, armor_inventory.type, mod_inventory.sku, armor_inventory.price
-                                                      """))
+                                                      """)).fetchall()
 
         items_in_stock = connection.execute(sqlalchemy.text("""SELECT i_log.i_id AS thing_id, item_inventory.sku, item_inventory.name, item_inventory.type, mod_inventory.sku AS modifier, item_inventory.price, COUNT(i_log.i_id) AS total 
                                                       FROM item_inventory
@@ -36,7 +36,7 @@ def get_catalog():
                                                       JOIN m_log ON m_log.m_id = i_log.m_id
                                                       JOIN mod_inventory ON mod_inventory.id = m_log.m_id
                                                       GROUP BY i_log.i_id, item_inventory.sku, item_inventory.name, item_inventory.type, mod_inventory.sku, item_inventory.price
-                                                      """))
+                                                      """)).fetchall()
 
     json = []
     for row in weapons_in_stock:
