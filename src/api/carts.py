@@ -61,7 +61,10 @@ def checkout(cart_id: int):
     # get all items being purchased by customer
     with db.engine.begin() as connection:
 
-        cart_items = connection.execute(sqlalchemy.text("SELECT type, type_id, quantity, rental FROM cart_items WHERE cart_id = :cart_id"), [{"cart_id":cart_id}]).all() 
+        cart_items = connection.execute(sqlalchemy.text("""SELECT type, type_id, quantity, catalog.rental 
+                                                        FROM cart_items 
+                                                        JOIN catalog ON cart_items.type_id = catalog.thing_id AND cart_items.type = catalog.type
+                                                        WHERE cart_id = :cart_id"""), [{"cart_id":cart_id}]).all() 
 
     # create ledger entry for each thing being bought
     # item : [purchase_type, type_id, quantity, rental]
