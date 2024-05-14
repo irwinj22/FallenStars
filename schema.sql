@@ -135,6 +135,7 @@
     price bigint null,
     quantity bigint null,
     rental boolean null,
+    type text null,
     constraint catalog_pkey primary key (id)
   ) tablespace pg_default;
 
