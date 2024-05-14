@@ -60,30 +60,7 @@ def checkout(cart_id: int):
 
     # get all items being purchased by customer
     with db.engine.begin() as connection:
-<<<<<<< HEAD:src/api/purchase_carts.py
-        purchase_items = connection.execute(sqlalchemy.text("""SELECT purchase_type, type_id, quantity, catalog.rental 
-                                                            FROM purchase_items
-                                                            JOIN catalog ON purchase_items.purchase_type = catalog.type AND purchase_items.type_id = catalog.thing_id
-                                                            WHERE cart_id = :cart_id"""), [{"cart_id":cart_id}]).all() 
-        # customer_name = connection.execute(sqlalchemy.text("SELECT customer_name FROM purchase_carts WHERE id = :cart_id"), [{"cart_id":cart_id}]).scalar()
 
-    # CREATE LEDGER ENTRY for each distinct item that is bought
-    # item --> [purchase_type, type_id, quantity]
-    for item in purchase_items:
-        if item[3] == True:
-            checkout = connection.execute(sqlalchemy.text("""INSERT INTO rentals (cart_id, rented_id, rented_type) 
-                                               VALUES (:y, :z, :w)
-                                               RETURNING checkout"""), [{"y":cart_id, "z":item[1], "w":item[0]}]).scalar()
-            timestamp_dt = datetime.fromisoformat(checkout)
-            two_hours = timedelta(hours=2)
-            new_timestamp = timestamp_dt + two_hours
-            iso_formatted_string = new_timestamp.isoformat()
-            connection.execute(sqlalchemy.text("""UPDATE rentals SET checkin = :x""", [{"x": iso_formatted_string}]))
-
-            
-        # there are only three possibilities for type: "item", "weapon", and "armor"
-        if item[0] == "item":
-=======
         cart_items = connection.execute(sqlalchemy.text("SELECT type, type_id, quantity, rental FROM cart_items WHERE cart_id = :cart_id"), [{"cart_id":cart_id}]).all() 
 
     # create ledger entry for each thing being bought
@@ -91,7 +68,6 @@ def checkout(cart_id: int):
     for item in cart_items:
         # if purchase is item
         if item[0] in ("attack", "defense", "support"):
->>>>>>> 5692650078bf3d77baa9732becde1473295fc8a4:src/api/carts.py
             with db.engine.begin() as connection:
                 item_price = connection.execute(sqlalchemy.text("SELECT price FROM item_inventory WHERE id = :id"), [{"id":item[1]}]).scalar()
                 # create ledger entry for each individual item (ie, 3 entries if quantity 3)
