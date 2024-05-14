@@ -138,7 +138,12 @@
     type text null,
     constraint catalog_pkey primary key (id)
   ) tablespace pg_default;
-
+ 
+  INSERT INTO weapon_inventory (sku, name, type, damage, price) VALUES ("KATANA", "katana", "melee", "medium", 35);
+  INSERT INTO weapon_inventory (sku, name, type, damage, price) VALUES ("LONGSWORD", "longsword", "melee", "heavy", 80);
+  INSERT INTO item_inventory (sku, name, type, price) VALUES ("ENCHANTED_STAFF", "enchanted_staff", "support", 80);
+  INSERT INTO mod_inventory (sku, type) VALUES ('CALIBRATION', 'calibration');
+  INSERT INTO weapon_inventory (sku, name, type, damage, price) VALUES ('LASER_PISTOL', 'laser pistol', 'pistol', "heavy" 10);
 
   """
   DESCRIPTIONS
