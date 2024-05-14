@@ -5,7 +5,7 @@ import json
 import logging
 import sys
 from starlette.middleware.cors import CORSMiddleware
-from src.api import carts, items, modifier
+from src.api import carts, items, modifier, catalog
 
 description = """
 Fallen Stars -- for all your armory needs!
@@ -29,6 +29,7 @@ origins = ["https://potion-exchange.vercel.app"]
 app.include_router(items.router)
 app.include_router(modifier.router)
 app.include_router(carts.router)
+app.include_router(catalog.router)
 
 @app.exception_handler(exceptions.RequestValidationError)
 @app.exception_handler(ValidationError)
