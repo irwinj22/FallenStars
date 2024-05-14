@@ -66,6 +66,15 @@ def checkout(cart_id: int):
     # create ledger entry for each thing being bought
     # item : [purchase_type, type_id, quantity, rental]
     for item in cart_items:
+        if item[3] == True:
+            checkout = connection.execute(sqlalchemy.text("""INSERT INTO rentals (cart_id, rented_id, rented_type) 
+                                               VALUES (:y, :z, :w)
+                                               RETURNING checkout"""), [{"y":cart_id, "z":item[1], "w":item[0]}]).scalar()
+            timestamp_dt = datetime.fromisoformat(checkout)
+            two_hours = timedelta(hours=2)
+            new_timestamp = timestamp_dt + two_hours
+            iso_formatted_string = new_timestamp.isoformat()
+            connection.execute(sqlalchemy.text("""UPDATE rentals SET checkin = :x""", [{"x": iso_formatted_string}]))
         # if purchase is item
         if item[0] in ("attack", "defense", "support"):
             with db.engine.begin() as connection:
