@@ -1,5 +1,5 @@
 # Example workflow 1 
-Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a look at the catalog, and purchase two laser pistols according to the given plan. We also buy a calibration modifier according to a separate plan. We only have one modifier, so we apply it to one of the pistols and increase the price. Finally, we update our catalog with the new items.   
+Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a look at the catalog, and purchase two laser pistols according to the given plan. We also buy a calibration modifier according to a separate plan. We only have one modifier, so we apply it to one of the pistols and increase the price.  
 
 1. call POST /items/weapon_plan and determine what weapons to buy 
 2. call POST /items/deliver_weapon to add weapon ledger entry
@@ -84,9 +84,9 @@ Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a loo
 Nicholas the Dawg wants to buy a new sword to show off to his friends. So, he asks to see the purchase catalog of our shop. He sees that we are selling 2 sharpened katanas for 70 credits and 1 longsword for 80 credits for permanent use. Nicholas wants both katanas.
 
 1. call GET/catalog to see what is available. 
-2. call POST/carts to create a new cart (id 7).
-3. call POST /carts/7/items/{item_sku} to add two katanas to cart. 
-4. call POST /carts/7/checkout to purchase.
+2. call POST/carts to create a new cart.
+3. call POST /carts/items/ to add two katanas to cart. 
+4. call POST /carts/checkout to purchase.
 
 # Testing Results
 1.  
@@ -157,12 +157,12 @@ curl -X 'POST' \
 }
 
 # Example Workflow 3
-Gabe the Babe has an internship as a part-time shepherd for the summer. So, he asks to see the rental catalog. He sees we are offering 1 enchanted staff for 90 gold. Gabe wants the enchanted staff.
+Gabe the Babe has an internship as a part-time shepherd for the summer. So, he asks to see the rental catalog. He sees we are offering 1 enchanted staff for 90 credits. Gabe wants the enchanted staff.
 
 1. call GET/catalog to see what's available. 
-2. call POST/carts to create new cart (id 9)
-3. call POST/carts/9/items/enchanted_staff, pass in a quantity of 1
-4. call POST/carts/6666/checkout to rent the enchanted staff for 90 gold
+2. call POST/carts to create new cart (id 9).
+3. call POST/carts/9/items/enchanted_staff, pass in a quantity of 1.
+4. call POST/carts/6666/checkout to rent the enchanted staff for 90 credits.
 
 
 1.
