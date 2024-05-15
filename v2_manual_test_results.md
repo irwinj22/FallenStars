@@ -168,9 +168,9 @@ curl -X 'POST' \
 Gabe the Babe has an internship as a part-time shepherd for the summer. So, he asks to see the rental catalog. He sees we are offering 1 enchanted staff for 90 credits. Gabe wants the enchanted staff.
 
 1. call GET/catalog to see what's available. 
-2. call POST/carts to create new cart (id 9).
-3. call POST/carts/9/items/enchanted_staff, pass in a quantity of 1.
-4. call POST/carts/6666/checkout to rent the enchanted staff for 90 credits.
+2. call POST/carts to create new cart.
+3. call POST/carts/items/enchanted_staff, pass in a quantity of 1.
+4. call POST/carts/checkout to rent the enchanted staff for 90 credits.
 
 
 1.
