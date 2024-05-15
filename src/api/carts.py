@@ -40,12 +40,12 @@ class CartItem(BaseModel):
     quantity: int
 
 @router.post("/{cart_id}/items/{item_sku}")
-def set_item_quantity(cart_id: int, type: str, type_id: int, cart_item: CartItem):
+def set_item_quantity(cart_id: int, type: str, thing_id: int, cart_item: CartItem):
     """ """
     # insert into item table
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text('''INSERT INTO cart_items (cart_id, type, type_id, quantity) VALUES
-                                           (:cart_id, :type, :type_id, :quantity)'''), [{"cart_id":cart_id, "type":type, "type_id":type_id, "quantity":cart_item.quantity}])
+        connection.execute(sqlalchemy.text('''INSERT INTO cart_items (cart_id, type, thing_id, quantity) VALUES
+                                           (:cart_id, :type, :thind_id, :quantity)'''), [{"cart_id":cart_id, "type":type, "thing_id":thing_id, "quantity":cart_item.quantity}])
 
     return "OK"
 
@@ -61,13 +61,13 @@ def checkout(cart_id: int):
     # get all items being purchased by customer
     with db.engine.begin() as connection:
 
-        cart_items = connection.execute(sqlalchemy.text("""SELECT cart_items.type, cart_items.type_id, cart_items.quantity, catalog.rental 
+        cart_items = connection.execute(sqlalchemy.text("""SELECT cart_items.type, cart_items.thing_id, cart_items.quantity, catalog.rental 
                                                         FROM cart_items 
-                                                        FULL JOIN catalog ON cart_items.type_id = catalog.thing_id AND cart_items.type = catalog.type
+                                                        FULL JOIN catalog ON cart_items.thing_id = catalog.thing_id AND cart_items.type = catalog.type
                                                         WHERE cart_id = :cart_id"""), [{"cart_id":cart_id}]).all() 
 
     # create ledger entry for each thing being bought
-    # item : [purchase_type, type_id, quantity, rental]
+    # item : [purchase_type, thing_id, quantity, rental]
     for item in cart_items:
         if item[3] == True:
             checkout = connection.execute(sqlalchemy.text("""INSERT INTO rentals (cart_id, rented_id, rented_type, returned) 
@@ -125,9 +125,9 @@ inventories are everything that we can POSSIBLY be holding
 where as the logs are what we are actaully going to have in stock (ledgers)
 
 could have five categories or something like that
-id | cart_id | type | type_id | quantity
+id | cart_id | type | thing_id | quantity
 
 type is the type of thing being purchased (item, weapon, armor)
-while type_id is the id of that thing within the log (this is making sense actually)
+while thing_id is the id of that thing within the log (this is making sense actually)
 
 '''
