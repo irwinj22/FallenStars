@@ -5,8 +5,6 @@ from src.api import auth
 import sqlalchemy
 from src import database as db
 
-
-
 router = APIRouter(
     prefix="/modifier",
     tags=["modifier"],
