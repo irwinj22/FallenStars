@@ -63,7 +63,6 @@ def get_catalog():
                     "sku": row.sku,
                     "name": row.name,
                     "type": row.type,
-                    "damage": row.damage,
                     "modifier": row.modifier,
                     "price": row.price,
                     "quantity": row.total,
