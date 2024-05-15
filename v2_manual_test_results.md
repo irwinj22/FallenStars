@@ -81,7 +81,7 @@ Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a loo
 "OK"
 
 # Example Workflow 2 
-Nicholas the Dawg wants to buy a new sword to show off to his friends. So, he asks to see the purchase catalog of our shop. He sees that we are selling 2 sharpened katanas for 70 credits and 1 longsword for 80 credits for permanent use. Nicholas wants both katanas.
+Nicholas the Dawg wants to buy a new sword to show off to his friends. So, he asks to see the purchase catalog of our shop. He sees that we are selling 2 katanas for 70 credits and 1 longsword for 80 credits for permanent use. Nicholas wants both katanas.
 
 1. call GET/catalog to see what is available. 
 2. call POST/carts to create a new cart.
@@ -102,7 +102,6 @@ curl -X 'GET' \
     "damage": "heavy",
     "modifier": null,
     "price": 80,
-    "quantity": 1,
     "rental": false
   },
   {
@@ -113,7 +112,16 @@ curl -X 'GET' \
     "damage": "medium",
     "modifier": null,
     "price": 35,
-    "quantity": 1,
+    "rental": false
+  },
+    {
+    "thing_id": 2,
+    "sku": "KATANA",
+    "name": "katana",
+    "type": "melee",
+    "damage": "medium",
+    "modifier": null,
+    "price": 35,
     "rental": false
   }
 ]   
@@ -178,7 +186,6 @@ curl -X 'GET' \
     "damage": "heavy",
     "modifier": null,
     "price": 80,
-    "quantity": 1,
     "rental": false
   },
   {
@@ -189,7 +196,26 @@ curl -X 'GET' \
     "damage": "medium",
     "modifier": null,
     "price": 35,
-    "quantity": 3,
+    "rental": false
+  },
+    {
+    "thing_id": 2,
+    "sku": "KATANA",
+    "name": "katana",
+    "type": "melee",
+    "damage": "medium",
+    "modifier": null,
+    "price": 35,
+    "rental": false
+  },
+    {
+    "thing_id": 2,
+    "sku": "KATANA",
+    "name": "katana",
+    "type": "melee",
+    "damage": "medium",
+    "modifier": null,
+    "price": 35,
     "rental": false
   },
   {
@@ -199,7 +225,6 @@ curl -X 'GET' \
     "type": "support",
     "modifier": null,
     "price": 80,
-    "quantity": 1,
     "rental": true
   }
 ]    
