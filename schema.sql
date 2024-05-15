@@ -163,14 +163,17 @@
 INSERT INTO weapon_inventory (sku, name, type, damage, price) VALUES ('LONGSWORD', 'longsword', 'melee', 'heavy', 80);
 INSERT INTO item_inventory (sku, name, type, price) VALUES ('ENCHANTED_STAFF', 'enchanted_staff', 'support', 80);
 INSERT INTO mod_inventory (sku, type) VALUES ('CALIBRATION', 'calibration');
+INSERT INTO mod_inventory (sku, type) VALUES ('SHARPENED', 'whetstone');
 INSERT INTO weapon_inventory (sku, name, type, damage, price) VALUES ('LASER_PISTOL', 'laser pistol', 'pistol', 'heavy', 10);
 INSERT INTO weapon_inventory (sku, name, type, damage, price) VALUES ('KATANA', 'katana', 'melee', 'medium', 35);
-INSERT INTO w_log (w_id, type) VALUES (4, 'melee');
-INSERT INTO w_log (w_id, type) VALUES (4, 'melee');
-INSERT INTO w_log (w_id, type) VALUES (3, 'pistol');
-INSERT INTO w_log (w_id, type) VALUES (3, 'pistol');
-INSERT INTO m_log (m_id, type, sku) VALUES (1, 'calibration', 'CALIBRATION');
-INSERT INTO w_log (w_id, type) VALUES (2, 'melee');
+INSERT INTO w_log (w_id, type) VALUES (3, 'melee');
+INSERT INTO w_log (w_id, type) VALUES (3, 'melee');
+INSERT INTO w_log (w_id, type) VALUES (2, 'pistol');
+INSERT INTO w_log (w_id, type) VALUES (2, 'pistol');
+INSERT INTO m_log (m_id, type, sku) VALUES (1, 'pistol', 'CALIBRATION');
+INSERT INTO m_log (m_id, type, sku) VALUES (2, 'melee', 'SHARPENED');
+INSERT INTO m_log (m_id, type, sku) VALUES (2, 'melee', 'SHARPENED');
+INSERT INTO w_log (w_id, type) VALUES (1, 'melee');
 INSERT INTO credit_ledger (change) VALUES (1000);
 
 
