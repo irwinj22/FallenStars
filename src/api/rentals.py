@@ -21,18 +21,22 @@ def rental_return(cart_id: int):
     with db.engine.begin() as connection:
         results = connection.execute(sqlalchemy.text("""SELECT checkin, rented_id, rented_type FROM rentals 
                                                           WHERE cart_id = :x"""), [{"x":cart_id}]).all() 
-        timestamp_dt = datetime.now(timezone.utc)
+        current_utc_timestamptz = datetime.now(timezone.utc)
         for row in results:
-            checkin_dt = datetime.fromisoformat(row[0])
-            if timestamp_dt < checkin_dt:
-                connection.execute(sqlalchemy.text("""UPDATE rentals SET returned = :x""", [{"x": True}]))
+            if current_utc_timestamptz < row[0]:
+                connection.execute(sqlalchemy.text("""UPDATE rentals SET returned = :x"""), [{"x": True}])
                 if row[2] in ("attack", "defense", "support"):
-                    connection.execute(sqlalchemy.text("""UPDATE i_log SET owner = :x""", [{"x": None}]))
+                    connection.execute(sqlalchemy.text("""UPDATE i_log 
+                                                       SET owner = :x 
+                                                       WHERE i_log.i_id = :y"""), [{"x": None, "y": row[1]}])
                 elif row[2] in ("melee", "rifle", "pistol"):
-                    connection.execute(sqlalchemy.text("""UPDATE w_log SET owner = :x""", [{"x": None}]))
+                    connection.execute(sqlalchemy.text("""UPDATE w_log 
+                                                       SET owner = :x 
+                                                       WHERE w_log.w_id = :y"""), [{"x": None, "y": row[1]}])
                 elif row[2] in ("street", "combat", "powered"):
-                    connection.execute(sqlalchemy.text("""UPDATE a_log SET owner = :x""", [{"x": None}]))
-
+                    connection.execute(sqlalchemy.text("""UPDATE a_log 
+                                                       SET owner = :x 
+                                                       WHERE a_log.a_id = :y"""), [{"x": None, "y": row[1]}])
             #iso_formatted_string = timestamp_dt.isoformat()
             
     return "OK"

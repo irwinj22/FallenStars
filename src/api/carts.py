@@ -78,8 +78,6 @@ def checkout(cart_id: int):
                 # new_timestamp = timestamp_dt + two_hours
                 # iso_formatted_string = new_timestamp.isoformat()
                 modified_timestamp = checkout + timedelta(hours=2)
-                print(checkout)
-                print(modified_timestamp)
                 connection.execute(sqlalchemy.text("""UPDATE rentals SET checkin = :x"""), [{"x": modified_timestamp}])
             # if purchase is item
             if item[0] in ("attack", "defense", "support"):

@@ -5,7 +5,7 @@ import json
 import logging
 import sys
 from starlette.middleware.cors import CORSMiddleware
-from src.api import carts, items, modifier, catalog
+from src.api import carts, items, modifier, catalog, rentals
 
 description = """
 Fallen Stars -- for all your armory needs!
@@ -30,6 +30,8 @@ app.include_router(items.router)
 app.include_router(modifier.router)
 app.include_router(carts.router)
 app.include_router(catalog.router)
+app.include_router(rentals.router)
+
 
 @app.exception_handler(exceptions.RequestValidationError)
 @app.exception_handler(ValidationError)
