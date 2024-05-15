@@ -46,10 +46,11 @@ def deliver_weapon(delivered_weapons: list[Weapon], order_id: int):
     with db.engine.begin() as connection:
         w_id = connection.execute(sqlalchemy.text("select id, sku from weapon_inventory"))
         w_id_dict = [w._asdict() for w in w_id]
+        print(w_id_dict)
         dict_bulk = []
         cost = 0
         for weapon in delivered_weapons:
-            dict_bulk.append({"w_id": next(w['id'] for w in w_id_dict if w['sku'] == weapon.sku), "type": weapon.type})
+            dict_bulk += [{"w_id": next(w['id'] for w in w_id_dict if w['sku'] == weapon.sku), "type": weapon.type}] * weapon.quantity
             cost -= weapon.price*weapon.quantity
         connection.execute(sqlalchemy.insert(db.w_log), dict_bulk)
         connection.execute(sqlalchemy.text("insert into credit_ledger (change) values (:cost)"),[{"cost": cost}])
