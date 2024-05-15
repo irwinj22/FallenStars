@@ -144,6 +144,14 @@ INSERT INTO item_inventory (sku, name, type, price) VALUES ('ENCHANTED_STAFF', '
 INSERT INTO mod_inventory (sku, type) VALUES ('CALIBRATION', 'calibration');
 INSERT INTO weapon_inventory (sku, name, type, damage, price) VALUES ('LASER_PISTOL', 'laser pistol', 'pistol', 'heavy', 10);
 INSERT INTO weapon_inventory (sku, name, type, damage, price) VALUES ('KATANA', 'katana', 'melee', 'medium', 35);
+INSERT INTO w_log (w_id, type) VALUES (4, 'melee');
+INSERT INTO w_log (w_id, type) VALUES (4, 'melee');
+INSERT INTO w_log (w_id, type) VALUES (3, 'pistol');
+INSERT INTO w_log (w_id, type) VALUES (3, 'pistol');
+INSERT INTO m_log (m_id, type, sku) VALUES (1, 'calibration', 'CALIBRATION');
+INSERT INTO w_log (w_id, type) VALUES (2, 'melee');
+INSERT INTO credit_ledger (change) VALUES (1000);
+
 
   """
   DESCRIPTIONS
