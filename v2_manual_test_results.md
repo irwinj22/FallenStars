@@ -16,8 +16,8 @@ Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a loo
   -d '[
   {
     "sku": "LASER_PISTOL",
-    "type": "medium",
-    "damage": "big",
+    "type": "pistol",
+    "damage": "spray",
     "price": 10,
     "quantity": 10
   }
@@ -37,8 +37,8 @@ Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a loo
   -d '[
   {
     "sku": "LASER_PISTOL",
-    "type": "medium",
-    "damage": "big",
+    "type": "pistol",
+    "damage": "spray",
     "price": 10,
     "quantity": 10
   }
@@ -54,20 +54,20 @@ Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a loo
   -d '[
   {
     "sku": "CALIBRATION",
-    "type": "small",
-    "damage": "heavy",
-    "price": 20,
-    "quantity": 4
+    "name": "calibration",
+    "type": "pistol",
+    "quantity": 10,
+    "price": 20
   }
 ]'
 [
   {
     "sku": "CALIBRATION",
-    "quantity": 1
+    "quantity": 2
   }
 ]
 
-4. curl -X 'POST' \
+5. curl -X 'POST' \
   'http://127.0.0.1:8000/modifier/deliver/2' \
   -H 'accept: application/json' \
   -H 'access_token: armory' \
@@ -75,7 +75,7 @@ Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a loo
   -d '[
   {
     "sku": "CALIBRATION",
-    "quantity": 1
+    "quantity": 2
   }
 ]'   
 "OK"
@@ -89,15 +89,16 @@ Nicholas the Dawg wants to buy a new sword to show off to his friends. So, he as
 4. call POST /carts/checkout to purchase.
 
 # Testing Results
-1.  
+
+1.
 curl -X 'GET' \
   'http://127.0.0.1:8000/catalog/' \
-  -H 'accept: application/json'   
+  -H 'accept: application/json'
 [
   {
-    "thing_id": 3,
+    "thing_id": 8,
     "sku": "LONGSWORD",
-    "name": "long sword",
+    "name": "longsword",
     "type": "melee",
     "damage": "heavy",
     "modifier": null,
@@ -105,7 +106,7 @@ curl -X 'GET' \
     "rental": false
   },
   {
-    "thing_id": 2,
+    "thing_id": 10,
     "sku": "KATANA",
     "name": "katana",
     "type": "melee",
@@ -114,8 +115,18 @@ curl -X 'GET' \
     "price": 35,
     "rental": false
   },
-    {
-    "thing_id": 2,
+  {
+    "thing_id": 9,
+    "sku": "LASER_PISTOL",
+    "name": "laser pistol",
+    "type": "pistol",
+    "damage": "heavy",
+    "modifier": null,
+    "price": 10,
+    "rental": false
+  },
+  {
+    "thing_id": 10,
     "sku": "KATANA",
     "name": "katana",
     "type": "melee",
@@ -123,8 +134,18 @@ curl -X 'GET' \
     "modifier": null,
     "price": 35,
     "rental": false
+  },
+  {
+    "thing_id": 9,
+    "sku": "LASER_PISTOL",
+    "name": "laser pistol",
+    "type": "pistol",
+    "damage": "heavy",
+    "modifier": null,
+    "price": 10,
+    "rental": false
   }
-]   
+]
 
 
 2. 
@@ -170,7 +191,7 @@ Gabe the Babe has an internship as a part-time shepherd for the summer. So, he a
 1. call GET/catalog to see what's available. 
 2. call POST/carts to create new cart.
 3. call POST/carts/items/enchanted_staff, pass in a quantity of 1.
-4. call POST/carts/checkout to rent the enchanted staff for 90 credits.
+4. call POST/carts/checkout to rent the enchanted staff for 90 credits. The return date is set as 2 hours from current time.
 
 
 1.
@@ -179,9 +200,9 @@ curl -X 'GET' \
   -H 'accept: application/json'   
 [
   {
-    "thing_id": 3,
+    "thing_id": 8,
     "sku": "LONGSWORD",
-    "name": "long sword",
+    "name": "longsword",
     "type": "melee",
     "damage": "heavy",
     "modifier": null,
@@ -189,27 +210,7 @@ curl -X 'GET' \
     "rental": false
   },
   {
-    "thing_id": 2,
-    "sku": "KATANA",
-    "name": "katana",
-    "type": "melee",
-    "damage": "medium",
-    "modifier": null,
-    "price": 35,
-    "rental": false
-  },
-    {
-    "thing_id": 2,
-    "sku": "KATANA",
-    "name": "katana",
-    "type": "melee",
-    "damage": "medium",
-    "modifier": null,
-    "price": 35,
-    "rental": false
-  },
-    {
-    "thing_id": 2,
+    "thing_id": 10,
     "sku": "KATANA",
     "name": "katana",
     "type": "melee",
@@ -219,15 +220,36 @@ curl -X 'GET' \
     "rental": false
   },
   {
-    "thing_id": 1,
-    "sku": "ENCHANTED_STAFF",
-    "name": "enchanted staff",
-    "type": "support",
+    "thing_id": 9,
+    "sku": "LASER_PISTOL",
+    "name": "laser pistol",
+    "type": "pistol",
+    "damage": "heavy",
     "modifier": null,
-    "price": 80,
-    "rental": true
+    "price": 10,
+    "rental": false
+  },
+  {
+    "thing_id": 10,
+    "sku": "KATANA",
+    "name": "katana",
+    "type": "melee",
+    "damage": "medium",
+    "modifier": null,
+    "price": 35,
+    "rental": false
+  },
+  {
+    "thing_id": 9,
+    "sku": "LASER_PISTOL",
+    "name": "laser pistol",
+    "type": "pistol",
+    "damage": "heavy",
+    "modifier": null,
+    "price": 10,
+    "rental": false
   }
-]    
+]
 
 2. 
 curl -X 'POST' \
@@ -237,7 +259,7 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "customer_name": "Gabe the Babe",
-  "character_class": "Gabes",
+  "character_class": "Gabriel",
   "level": 10
 }'
 {
