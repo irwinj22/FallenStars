@@ -20,10 +20,10 @@ def rental_return(cart_id: int):
     """
     with db.engine.begin() as connection:
         results = connection.execute(sqlalchemy.text("""SELECT checkin, rented_id, rented_type FROM rentals 
-                                                          WHERE cart_id = :x"""), [{"x":cart_id}]).all() 
+                                                          WHERE cart_id = :x AND returned = :y"""), [{"x":cart_id, "y": False}]).all() 
         current_utc_timestamptz = datetime.now(timezone.utc)
         for row in results:
-            if current_utc_timestamptz < row[0]:
+            if current_utc_timestamptz > row[0]:
                 connection.execute(sqlalchemy.text("""UPDATE rentals SET returned = :x"""), [{"x": True}])
                 if row[2] in ("attack", "defense", "support"):
                     connection.execute(sqlalchemy.text("""UPDATE i_log 
