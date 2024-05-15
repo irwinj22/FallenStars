@@ -20,13 +20,13 @@ def get_catalog():
                                                       LEFT JOIN mod_inventory ON mod_inventory.id = w_log.m_id
                                                       """)).fetchall()
         
-        armor_in_stock = connection.execute(sqlalchemy.text("""SELECT a_log.a_id AS thing_id, armor_inventory.sku, armor_inventory.name, armor_inventory.type, mod_inventory.sku AS modifier, armor_inventory.price, (SELECT COUNT(a_log.a_id) FROM a_log WHERE a_log.owner is null) - (SELECT COUNT(a_log.a_id) FROM a_log WHERE a_log.owner is not null) AS total 
+        armor_in_stock = connection.execute(sqlalchemy.text("""SELECT armor_inventory.id AS thing_id, armor_inventory.sku, armor_inventory.name, armor_inventory.type, mod_inventory.sku AS modifier, armor_inventory.price, (SELECT COUNT(a_log.a_id) FROM a_log WHERE a_log.owner is null) - (SELECT COUNT(a_log.a_id) FROM a_log WHERE a_log.owner is not null) AS total 
                                                       FROM armor_inventory
                                                       LEFT JOIN a_log ON armor_inventory.id = a_log.a_id
                                                       LEFT JOIN mod_inventory ON mod_inventory.id = a_log.m_id
                                                       """)).fetchall()
 
-        items_in_stock = connection.execute(sqlalchemy.text("""SELECT i_log.i_id AS thing_id, item_inventory.sku, item_inventory.name, item_inventory.type, mod_inventory.sku AS modifier, item_inventory.price, (SELECT COUNT(i_log.i_id) FROM i_log WHERE i_log.owner is null) - (SELECT COUNT(i_log.i_id) FROM i_log WHERE i_log.owner is not null) AS total 
+        items_in_stock = connection.execute(sqlalchemy.text("""SELECT item_inventory.id AS thing_id, item_inventory.sku, item_inventory.name, item_inventory.type, mod_inventory.sku AS modifier, item_inventory.price, (SELECT COUNT(i_log.i_id) FROM i_log WHERE i_log.owner is null) - (SELECT COUNT(i_log.i_id) FROM i_log WHERE i_log.owner is not null) AS total 
                                                       FROM item_inventory
                                                       LEFT JOIN i_log ON item_inventory.id = i_log.i_id
                                                       LEFT JOIN mod_inventory ON mod_inventory.id = i_log.m_id
