@@ -134,7 +134,7 @@ def get_armor_plan(armor_catalog: list[Armor]):
     return json
 
 @router.post("/item_plan")
-def get_weapon_plan(item_catalog: list[Item]):
+def get_item_plan(item_catalog: list[Item]):
     '''
     Plan to buy misc items.
     '''
