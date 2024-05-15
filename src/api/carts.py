@@ -103,6 +103,10 @@ def checkout(cart_id: int):
             else:
                 print("----------- ERROR ------------")
                 print("CHECKOUT : UNEXPECTED ITEM TYPE")
+
+            # make insertion into credit ledger
+            with db.engine.begin() as connection:
+                connection.execute(sqlalchemy.text("INSERT INTO credit_ledger (change) VALUES (:change)"), [{"change":item_price * item[2]}]) 
             
             num_purchases += item[2]
             total_credits += (item_price * item[2])

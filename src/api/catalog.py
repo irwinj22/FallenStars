@@ -14,28 +14,22 @@ router = APIRouter()
 def get_catalog():
     with db.engine.begin() as connection:
         # Set up stock for weapons, armor, and items separately
-        weapons_in_stock = connection.execute(sqlalchemy.text("""SELECT w_log.w_id AS thing_id, weapon_inventory.sku, weapon_inventory.name, weapon_inventory.type, weapon_inventory.damage, mod_inventory.sku AS modifier, weapon_inventory.price, COUNT(w_log.w_id) AS total 
+        weapons_in_stock = connection.execute(sqlalchemy.text("""SELECT weapon_inventory.id AS thing_id, weapon_inventory.sku, weapon_inventory.name, weapon_inventory.type, weapon_inventory.damage, mod_inventory.sku AS modifier, weapon_inventory.price, (SELECT COUNT(w_log.w_id) FROM w_log WHERE w_log.owner is null) - (SELECT COUNT(w_log.w_id) FROM w_log WHERE w_log.owner is not null) AS total 
                                                       FROM weapon_inventory
-                                                      FULL JOIN w_log ON weapon_inventory.id = w_log.w_id
-                                                      FULL JOIN m_log ON m_log.m_id = w_log.m_id
-                                                      FULL JOIN mod_inventory ON mod_inventory.id = m_log.m_id
-                                                      GROUP BY w_log.w_id, weapon_inventory.sku, weapon_inventory.name, weapon_inventory.type, weapon_inventory.damage, mod_inventory.sku, weapon_inventory.price
+                                                      LEFT JOIN w_log ON weapon_inventory.id = w_log.w_id
+                                                      LEFT JOIN mod_inventory ON mod_inventory.id = w_log.m_id
                                                       """)).fetchall()
         
-        armor_in_stock = connection.execute(sqlalchemy.text("""SELECT a_log.a_id AS thing_id, armor_inventory.sku, armor_inventory.name, armor_inventory.type, mod_inventory.sku AS modifier, armor_inventory.price, COUNT(a_log.a_id) AS total 
+        armor_in_stock = connection.execute(sqlalchemy.text("""SELECT armor_inventory.id AS thing_id, armor_inventory.sku, armor_inventory.name, armor_inventory.type, mod_inventory.sku AS modifier, armor_inventory.price, (SELECT COUNT(a_log.a_id) FROM a_log WHERE a_log.owner is null) - (SELECT COUNT(a_log.a_id) FROM a_log WHERE a_log.owner is not null) AS total 
                                                       FROM armor_inventory
-                                                      FULL JOIN a_log ON armor_inventory.id = a_log.a_id
-                                                      FULL JOIN m_log ON m_log.m_id = a_log.m_id
-                                                      FULL JOIN mod_inventory ON mod_inventory.id = m_log.m_id
-                                                      GROUP BY a_log.a_id, armor_inventory.sku, armor_inventory.name, armor_inventory.type, mod_inventory.sku, armor_inventory.price
+                                                      LEFT JOIN a_log ON armor_inventory.id = a_log.a_id
+                                                      LEFT JOIN mod_inventory ON mod_inventory.id = a_log.m_id
                                                       """)).fetchall()
 
-        items_in_stock = connection.execute(sqlalchemy.text("""SELECT i_log.i_id AS thing_id, item_inventory.sku, item_inventory.name, item_inventory.type, mod_inventory.sku AS modifier, item_inventory.price, COUNT(i_log.i_id) AS total 
+        items_in_stock = connection.execute(sqlalchemy.text("""SELECT item_inventory.id AS thing_id, item_inventory.sku, item_inventory.name, item_inventory.type, mod_inventory.sku AS modifier, item_inventory.price, (SELECT COUNT(i_log.i_id) FROM i_log WHERE i_log.owner is null) - (SELECT COUNT(i_log.i_id) FROM i_log WHERE i_log.owner is not null) AS total 
                                                       FROM item_inventory
-                                                      FULL JOIN i_log ON item_inventory.id = i_log.i_id
-                                                      FULL JOIN m_log ON m_log.m_id = i_log.m_id
-                                                      FULL JOIN mod_inventory ON mod_inventory.id = m_log.m_id
-                                                      GROUP BY i_log.i_id, item_inventory.sku, item_inventory.name, item_inventory.type, mod_inventory.sku, item_inventory.price
+                                                      LEFT JOIN i_log ON item_inventory.id = i_log.i_id
+                                                      LEFT JOIN mod_inventory ON mod_inventory.id = i_log.m_id
                                                       """)).fetchall()
 
     json = []
@@ -69,7 +63,6 @@ def get_catalog():
                     "sku": row.sku,
                     "name": row.name,
                     "type": row.type,
-                    "damage": row.damage,
                     "modifier": row.modifier,
                     "price": row.price,
                     "quantity": row.total,
