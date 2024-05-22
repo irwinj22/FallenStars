@@ -89,16 +89,16 @@ def get_modify_plan(modifier_catalog: list[Modifier]):
             mod_list = connection.execute(sqlalchemy.text("select sku from mod_inventory")).fetchall()
             mod_filter = [m[0] for m in mod_list]
             all_types = weapon_list + armor_list + item_list
-        for mod in modifier_catalog:
-            qual = next((x for x in all_types if x[0] == mod.type), None)
-            if qual != None and mod.price < credits and mod.sku in mod_filter:
-                json.append(
-                    {
-                        "sku": mod.sku,
-                        "quantity": min(qual[1], mod.quantity)
-                    }
-                )
-                credits -= mod.price
+    for mod in modifier_catalog:
+        qual = next((x for x in all_types if x[0] == mod.type), None)
+        if qual != None and mod.price < credits and mod.sku in mod_filter:
+            json.append(
+                {
+                    "sku": mod.sku,
+                    "quantity": min(qual[1], mod.quantity)
+                }
+            )
+            credits -= mod.price
 
     return json
     

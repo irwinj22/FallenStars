@@ -163,33 +163,42 @@
 INSERT INTO weapon_inventory (sku, name, type, damage, price) VALUES ('LONGSWORD', 'longsword', 'melee', 'heavy', 80);
 INSERT INTO item_inventory (sku, name, type, price) VALUES ('ENCHANTED_STAFF', 'enchanted_staff', 'support', 80);
 INSERT INTO mod_inventory (sku, type) VALUES ('CALIBRATION', 'calibration');
+INSERT INTO mod_inventory (sku, type) VALUES ('SHARPENED', 'whetstone');
 INSERT INTO weapon_inventory (sku, name, type, damage, price) VALUES ('LASER_PISTOL', 'laser pistol', 'pistol', 'heavy', 10);
 INSERT INTO weapon_inventory (sku, name, type, damage, price) VALUES ('KATANA', 'katana', 'melee', 'medium', 35);
-INSERT INTO w_log (w_id, type) VALUES (4, 'melee');
-INSERT INTO w_log (w_id, type) VALUES (4, 'melee');
-INSERT INTO w_log (w_id, type) VALUES (3, 'pistol');
-INSERT INTO w_log (w_id, type) VALUES (3, 'pistol');
-INSERT INTO m_log (m_id, type, sku) VALUES (1, 'calibration', 'CALIBRATION');
-INSERT INTO w_log (w_id, type) VALUES (2, 'melee');
+INSERT INTO i_log (i_id, type) VALUES (1, 'support');
+INSERT INTO w_log (w_id, type) VALUES (3, 'melee');
+INSERT INTO w_log (w_id, type) VALUES (3, 'melee');
+INSERT INTO w_log (w_id, type) VALUES (2, 'pistol');
+INSERT INTO w_log (w_id, type) VALUES (2, 'pistol');
+INSERT INTO m_log (m_id, type, sku) VALUES (1, 'pistol', 'CALIBRATION');
+INSERT INTO m_log (m_id, type, sku) VALUES (2, 'melee', 'SHARPENED');
+INSERT INTO m_log (m_id, type, sku) VALUES (2, 'melee', 'SHARPENED');
+INSERT INTO w_log (w_id, type) VALUES (1, 'melee');
 INSERT INTO credit_ledger (change) VALUES (1000);
 
+-- please note that the ids refenced in logs (w_id, m_id_ may be incorrect depending on table ...
+-- thus, these ids might have to be manaully changed for code to work
 
   """
   DESCRIPTIONS
-  Any _log table tracks what we currently have. Each instance of an item has its own row and keeps track of who it is sold to.
-  All _inventory tables desribe WHAT we want to buy, as to give guidance on our plans and modifications.
-  rentals keeps track of a cart id, _log id for the thing bought, and checkin/checkout times. 
-  More on mods:
-    When mods are delivered, they go through the _log tables to see what has a NULL m_id value. It will then go through
+  - Any _log table tracks what we currently have. Each instance of an item has its own row and keeps track of who it is sold to.
+    --> A ledger, really. 
+  - All _inventory tables desribe WHAT we want to buy, as to give guidance on our plans and modifications.
+  - Rentals keeps track of a cart id, _log id for the thing bought, and checkin/checkout times. 
+  - More on mods:
+    --> When mods are delivered, they go through the _log tables to see what has a NULL m_id value. It will then go through
     mod by mod, attaching to an item according to type.
     However, if two items share the same type, they'll be modded the same. Say you have a mace and a sword in your
     inventory and want to buy the 'sharpened' mod. You'll buy as many as the plan spits out, and then update all 'melee'
     weapons until you run out of mods. That means both the mace and the sword will be modded even though they are 
     different items, because they have the same type.
-
-    ALSO! The plan for mods checks to see what weapons are not modded, so there is NEVER a situation where there are more
-    mods than items. I didn't want to deal with it...
-  More on selling:
-    When a cart buys an item, the relevant _log row is updated so that the 'owner' column is the cart id.
+    --> ALSO! The plan for mods checks to see what weapons are not modded, so there is NEVER a situation where there are more
+    mods than items.
+  - credit_ledger keeps track of change in credits. 
+    --> credits change when purchasing inventory, selling items
+    --> base of 1000 credits given
+  - More on selling:
+    --> When a cart buys an item, the relevant _log row is updated so that the 'owner' column is the cart id.
     The same occurs when a rental happens, however, when the checkin time occurs, should set the owner back to NULL.
   """
