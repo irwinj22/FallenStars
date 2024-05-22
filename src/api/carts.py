@@ -106,7 +106,9 @@ def checkout(cart_id: int):
 
             # make insertion into credit ledger
             with db.engine.begin() as connection:
-                connection.execute(sqlalchemy.text("INSERT INTO credit_ledger (change) VALUES (:change)"), [{"change":item_price * item[2]}]) 
+                print(item_price)
+                print(item[2])
+                connection.execute(sqlalchemy.text("INSERT INTO credit_ledger (change) VALUES (:change)"), [{"change":item_price*item[2]}]) 
             
             num_purchases += item[2]
             total_credits += (item_price * item[2])
