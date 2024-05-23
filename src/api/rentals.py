@@ -13,6 +13,23 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
+@router.post("/rental")
+def rental_assign():
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("""UPDATE i_log SET rental = :x
+                                           WHERE id = (SELECT MIN(id) 
+                                           FROM i_log
+                                           WHERE Owner IS NULL AND rental = :y)"""), [{"x": True, "y": False}])
+        connection.execute(sqlalchemy.text("""UPDATE w_log SET rental = :x
+                                           WHERE id = (SELECT MIN(id) 
+                                           FROM w_log
+                                           WHERE Owner IS NULL AND rental = :y)"""), [{"x": True, "y": False}])
+        connection.execute(sqlalchemy.text("""UPDATE a_log SET rental = :x
+                                           WHERE id = (SELECT MIN(id) 
+                                           FROM a_log
+                                           WHERE Owner IS NULL AND rental = :y)"""), [{"x": True, "y": False}])
+    return "OK"
+
 @router.post("/rental_return")
 def rental_return(cart_id: int):
     """
