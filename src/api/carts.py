@@ -40,12 +40,12 @@ class CartItem(BaseModel):
     quantity: int
 
 @router.post("/{cart_id}/items/{item_sku}")
-def set_item_quantity(cart_id: int, type: str, thing_id: int, cart_item: CartItem):
+def set_item_quantity(cart_id: int, type: str, object_id: int, cart_item: CartItem):
     """ """
     # insert into item table
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text('''INSERT INTO cart_items (cart_id, type, thing_id, quantity) VALUES
-                                           (:cart_id, :type, :thing_id, :quantity)'''), [{"cart_id":cart_id, "type":type, "thing_id":thing_id, "quantity":cart_item.quantity}])
+        connection.execute(sqlalchemy.text('''INSERT INTO cart_items (cart_id, type, object_id, quantity) VALUES
+                                           (:cart_id, :type, :object_id, :quantity)'''), [{"cart_id":cart_id, "type":type, "object_id":object_id, "quantity":cart_item.quantity}])
 
     return "OK"
 
@@ -59,60 +59,89 @@ def checkout(cart_id: int):
     # NOTE: there are going to need to be base values in different tables
 
     # get all items being purchased by customer
+    # List of items for each kind of object (item, weapon, armor)
+    # Storing the object type, its respective LOG id, quantity of that item, and whether or not it's a rental
     with db.engine.begin() as connection:
-
-        cart_items = connection.execute(sqlalchemy.text("""SELECT cart_items.type, cart_items.thing_id, cart_items.quantity, catalog.rental 
+        i_cart_items = connection.execute(sqlalchemy.text("""SELECT cart_items.type, cart_items.object_id, cart_items.quantity, i_log.rental, i_log.i_id 
                                                         FROM cart_items 
-                                                        FULL JOIN catalog ON cart_items.thing_id = catalog.thing_id AND cart_items.type = catalog.type
+                                                        RIGHT JOIN i_log ON cart_items.object_id = i_log.id AND cart_items.type = i_log.type
+                                                        WHERE cart_id = :cart_id"""), [{"cart_id":cart_id}]).all() 
+        w_cart_items = connection.execute(sqlalchemy.text("""SELECT cart_items.type, cart_items.object_id, cart_items.quantity, w_log.rental, w_log.w_id  
+                                                        FROM cart_items 
+                                                        RIGHT JOIN w_log ON cart_items.object_id = w_log.id AND cart_items.type = w_log.type
+                                                        WHERE cart_id = :cart_id"""), [{"cart_id":cart_id}]).all() 
+        a_cart_items = connection.execute(sqlalchemy.text("""SELECT cart_items.type, cart_items.object_id, cart_items.quantity, a_log.rental, a_log.a_id 
+                                                        FROM cart_items 
+                                                        RIGHT JOIN a_log ON cart_items.object_id = a_log.id AND cart_items.type = a_log.type
                                                         WHERE cart_id = :cart_id"""), [{"cart_id":cart_id}]).all() 
 
         # create ledger entry for each thing being bought
         # item : [purchase_type, thing_id, quantity, rental]
-        for item in cart_items:
+        # Looping through each of the three lists
+        # First checking if item is a rental; if it is, then it inserts it into our rental table and assigns a checkin time to be two hours later
+        for item in i_cart_items:
             if item[3] == True:
                 checkout = connection.execute(sqlalchemy.text("""INSERT INTO rentals (cart_id, rented_id, rented_type, returned) 
                                                 VALUES (:y, :z, :w, :q)
                                                 RETURNING checkout"""), [{"y":cart_id, "z":item[1], "w":item[0], "q": False}]).scalar()
-                # timestamp_dt = datetime.fromisoformat(checkout)
-                # two_hours = timedelta(hours=2)
-                # new_timestamp = timestamp_dt + two_hours
-                # iso_formatted_string = new_timestamp.isoformat()
                 modified_timestamp = checkout + timedelta(hours=2)
                 connection.execute(sqlalchemy.text("""UPDATE rentals SET checkin = :x"""), [{"x": modified_timestamp}])
-            # if purchase is item
-            if item[0] in ("attack", "defense", "support"):
-                with db.engine.begin() as connection:
-                    item_price = connection.execute(sqlalchemy.text("SELECT price FROM item_inventory WHERE id = :id"), [{"id":item[1]}]).scalar()
-                    # create ledger entry for each individual item (ie, 3 entries if quantity 3)
-                    for i in range(0, item[2]):
-                        connection.execute(sqlalchemy.text('''INSERT INTO i_log (owner, i_id, m_id, type) VALUES (:name, :item, :mod, :type)'''), [{"name":cart_id, "item":item[1], "mod":None, "type":item[0]}])
-            # if purchase is armor
-            elif item[0] in ("melee", "rifle", "pistol"):
-                with db.engine.begin() as connection:
-                    item_price = connection.execute(sqlalchemy.text("SELECT price FROM weapon_inventory WHERE id = :id"), [{"id":item[1]}]).scalar()
-                    # create ledger entry for each individual item (ie, 3 entries if quantity 3)
-                    for i in range(0, item[2]):
-                        connection.execute(sqlalchemy.text('''INSERT INTO w_log (owner, w_id, m_id, type) VALUES (:name, :weapon, :mod, :type)'''), [{"name":cart_id, "weapon":item[1], "mod":None, "type":item[0]}])      
-            # if purchase is item
-            elif item[0] in ("street", "combat", "powered"):
-                with db.engine.begin() as connection:
-                    item_price = connection.execute(sqlalchemy.text("SELECT price FROM armor_inventory WHERE id = :id"), [{"id":item[1]}]).scalar()
-                    # create ledger entry for each individual item (ie, 3 entries if quantity 3)
-                    for i in range(0, item[2]):
-                        connection.execute(sqlalchemy.text('''INSERT INTO a_log (owner, a_id, m_id, type) VALUES (:name, :armor, :mod, :type)'''), [{"name":cart_id, "armor":item[1], "mod":None, "type":item[0]}])
-            else:
-                print("----------- ERROR ------------")
-                print("CHECKOUT : UNEXPECTED ITEM TYPE")
-
-            # make insertion into credit ledger
-            with db.engine.begin() as connection:
-                print(item_price)
-                print(item[2])
-                connection.execute(sqlalchemy.text("INSERT INTO credit_ledger (change) VALUES (:change)"), [{"change":item_price*item[2]}]) 
+                
+            # Acquire the price of specific ITEM 
+            item_price = connection.execute(sqlalchemy.text("SELECT price FROM item_inventory WHERE id = :id"), [{"id":item[4]}]).scalar()
             
+            # create ledger entry for each individual item (ie, 3 entries if quantity 3)
+            for i in range(0, item[2]):
+                connection.execute(sqlalchemy.text('''INSERT INTO i_log (owner, i_id, m_id, type) VALUES (:name, :item, :mod, :type)'''), [{"name":cart_id, "item":item[4], "mod":None, "type":item[0]}])
+            
+            # Update credit ledger
+            connection.execute(sqlalchemy.text("INSERT INTO credit_ledger (change) VALUES (:change)"), [{"change":item_price*item[2]}]) 
+            
+            # Update counts of purchases and credits spent in this cart
             num_purchases += item[2]
             total_credits += (item_price * item[2])
+        
+        for item in w_cart_items:
+            if item[3] == True:
+                checkout = connection.execute(sqlalchemy.text("""INSERT INTO rentals (cart_id, rented_id, rented_type, returned) 
+                                                VALUES (:y, :z, :w, :q)
+                                                RETURNING checkout"""), [{"y":cart_id, "z":item[1], "w":item[0], "q": False}]).scalar()
+                modified_timestamp = checkout + timedelta(hours=2)
+                connection.execute(sqlalchemy.text("""UPDATE rentals SET checkin = :x"""), [{"x": modified_timestamp}])
 
+             # Acquire the price of specific WEAPON    
+            item_price = connection.execute(sqlalchemy.text("SELECT price FROM weapon_inventory WHERE id = :id"), [{"id":item[4]}]).scalar()
+
+            # create ledger entry for each individual item (ie, 3 entries if quantity 3)
+            for i in range(0, item[2]):
+                connection.execute(sqlalchemy.text('''INSERT INTO w_log (owner, w_id, m_id, type) VALUES (:name, :item, :mod, :type)'''), [{"name":cart_id, "item":item[4], "mod":None, "type":item[0]}])
+            
+            # Update credit ledger
+            connection.execute(sqlalchemy.text("INSERT INTO credit_ledger (change) VALUES (:change)"), [{"change":item_price*item[2]}]) 
+            
+            # Update counts of purchases and credits spent in this cart
+            num_purchases += item[2]
+            total_credits += (item_price * item[2])
+        
+        for item in a_cart_items:
+            if item[3] == True:
+                checkout = connection.execute(sqlalchemy.text("""INSERT INTO rentals (cart_id, rented_id, rented_type, returned) 
+                                                VALUES (:y, :z, :w, :q)
+                                                RETURNING checkout"""), [{"y":cart_id, "z":item[1], "w":item[0], "q": False}]).scalar()
+                modified_timestamp = checkout + timedelta(hours=2)
+                connection.execute(sqlalchemy.text("""UPDATE rentals SET checkin = :x"""), [{"x": modified_timestamp}])
+
+            item_price = connection.execute(sqlalchemy.text("SELECT price FROM armor_inventory WHERE id = :id"), [{"id":item[4]}]).scalar()
+            # create ledger entry for each individual item (ie, 3 entries if quantity 3)
+            for i in range(0, item[2]):
+                connection.execute(sqlalchemy.text('''INSERT INTO a_log (owner, a_id, m_id, type) VALUES (:name, :item, :mod, :type)'''), [{"name":cart_id, "item":item[4], "mod":None, "type":item[0]}])
+            
+            # Update credit ledger
+            connection.execute(sqlalchemy.text("INSERT INTO credit_ledger (change) VALUES (:change)"), [{"change":item_price*item[2]}]) 
+            
+            # Update counts of purchases and credits spent in this cart
+            num_purchases += item[2]
+            total_credits += (item_price * item[2])
 
     return {"total_purchases": num_purchases, "total_credits_paid": total_credits}
 
