@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+
 from src import database as db
 from src.api import auth
 import sqlalchemy
@@ -45,24 +46,4 @@ def get_catalog():
         )
 
     return json
-
-
-''' 
-some other things that are worth taking note of: 
-
-going to have a different entry in item_plan for every different combination of mod? is that true? 
-if so, then I am going to have to take mods into account here ...
-
-
-i think that mod_id being 0 means that there is no mod or something, otherwise how are we 
-going to be able to make sure that the joins work and what not? 
-
-mods_plan.compatibile should be defined as a list of text ... 
-
-
-have to get "caught up" for some things to work, which seems kind of wild to me I don't understand 
-I guess that's something that we will have to talk to Pierce about .. 
-
-getting rid of the whole plan/deliver thing, which we didn't talk about but I think makese a lot of sense tbh .. 
-'''
-    
+  

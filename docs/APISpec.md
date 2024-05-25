@@ -461,7 +461,7 @@ Add modifications to current catalog items where applicable.
     {
         "sku": "string",
         "name": "string",
-        "compatibility": "string",
+        "type": "string",
         "price": "integer",
         "quantity": "integer"
     }

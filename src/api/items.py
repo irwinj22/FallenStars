@@ -75,6 +75,3 @@ def purchase_items(item_catalog: list[Item]):
             connection.execute(sqlalchemy.text(pur_sql), [{"qty":line_item['qty'], "item_id":id, "item_sku":line_item['sku'], "credit_change": -line_item['price'] * line_item['qty']}])
 
     return order
-
-
-
