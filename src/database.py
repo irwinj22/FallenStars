@@ -1,5 +1,6 @@
 import os
 import dotenv
+import sqlalchemy
 from sqlalchemy import create_engine
 
 def database_connection_url():

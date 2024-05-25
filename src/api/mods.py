@@ -5,27 +5,28 @@ import sqlalchemy
 from src import database as db
 
 router = APIRouter(
-    prefix="/items",
-    tags=["items"],
+    prefix="/mods",
+    tags=["mods"],
     dependencies=[Depends(auth.get_api_key)],
 )
 
-class Item(BaseModel):
+class Mod(BaseModel):
     sku: str
     type: str
     price: int
     quantity: int
+    compatible: list[str]
 
-@router.post("/purchase/items")
-def purchase_items(item_catalog: list[Item]):
+@router.post("/purchase/mods")
+def purchase_mods(mod_catalog: list[Mod]):
     '''
-    Nurane gives list of items, we buy inventory accordingly. 
+    Nurane gives list of mods, we buy inventory accordingly. 
     '''
 
     '''
     Current logic: 
-    buy 5 RAINBOW_PISTOL, if possible (could be restrained by credits or num offered)
-    --> if can't buy 5, just buy as many as possible 
+    buy 3 FLAMING_BLADE, if possible (could be restrained by credits or num offered)
+    --> if can't buy 3, just buy as many as possible 
     '''
 
     order = []
@@ -40,31 +41,31 @@ def purchase_items(item_catalog: list[Item]):
         credits = connection.execute(sqlalchemy.text(credits_sql)).scalar()
 
     # iterate through each item being offered by Nurane, buy according to logic specified above
-    for item in item_catalog: 
-        if item.sku == "RAINBOW_PISTOL":
-            num_can_afford = credits // item.price 
-            num_possibile = min(5, min(num_can_afford, item.quantity))
+    for mod in mod_catalog: 
+        if mod.sku == "FLAMING_BLADE":
+            num_can_afford = credits // mod.price 
+            num_possibile = min(3, min(num_can_afford, mod.quantity))
             # if possible for us to buy more than one, then add to order
             if num_possibile > 0:
                 order.append(
                     {
-                        "sku": item.sku,
-                        "type" : item.type, 
-                        "price" : item.price,
+                        "sku": mod.sku,
+                        "type" : mod.type, 
+                        "price" : mod.price,
                         "qty" : num_possibile
                     }
                 )
 
-    # to get id from items_plan    
+    # to get id from mods_plan    
     id_sql = '''
     SELECT id 
-    FROM items_plan 
+    FROM mods_plan 
     WHERE sku = :sku 
     '''
     
-    # to make insertion into items_ledger
+    # to make insertion into mods_ledger
     pur_sql = '''
-    INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change) VALUES (:qty, :item_id, :item_sku, :credit_change)
+    INSERT INTO mods_ledger (qty_change, mod_id, mod_sku, credit_change) VALUES (:qty, :mod_id, :mod_sku, :credit_change)
     '''
 
     # once the order has been created, run through and make the appropriate inserts
@@ -72,7 +73,9 @@ def purchase_items(item_catalog: list[Item]):
         print(line_item)
         with db.engine.begin() as connection:
             id = connection.execute(sqlalchemy.text(id_sql), [{"sku":line_item['sku']}]).scalar()
-            connection.execute(sqlalchemy.text(pur_sql), [{"qty":line_item['qty'], "item_id":id, "item_sku":line_item['sku'], "credit_change": -line_item['price'] * line_item['qty']}])
+            connection.execute(sqlalchemy.text(pur_sql), [{"qty":line_item['qty'], "mod_id":id, "mod_sku":line_item['sku'], "credit_change": -line_item['price'] * line_item['qty']}])
+
+    # TODO: implement the logic of attaching mods to items!!
 
     return order
 
