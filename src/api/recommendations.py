@@ -6,8 +6,8 @@ from src import database as db
 import numpy as np
 
 router = APIRouter(
-    prefix="/recs",
-    tags=["recs"],
+    prefix="/recommendations",
+    tags=["recommendations"],
     dependencies=[Depends(auth.get_api_key)],
 )
 
