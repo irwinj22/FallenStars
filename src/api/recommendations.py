@@ -4,6 +4,7 @@ from src.api import auth
 import sqlalchemy
 from src import database as db
 import numpy as np
+import random
 
 router = APIRouter(
     prefix="/recommendations",
@@ -21,7 +22,7 @@ def cosine_distance(v1, v2):
 def recommend(budget: int, enemy_type: str, role: str):
 
 
-    # Water beats Fire
+    # Offensively speaking, water beats Fire
     # Earth beats Water
     # Fire beats Earth
     # 1 is associated with fire type objects, so if our enemy is of type earth we will want an attack object of fire type (1)
@@ -33,6 +34,15 @@ def recommend(budget: int, enemy_type: str, role: str):
     "BASIC": 4
                     }
     
+    # Defensively speaking, each type defends the best against its own type
+    # 1 for Fire, 2 for Water, 3 for Earth, 4 for Basic
+    enemy_type_defense_map = {
+    "FIRE": 1,
+    "WATER": 2,
+    "EARTH": 3,
+    "BASIC": 4
+                    }
+
     # The roles in our world fall into three categories: Attackers, Defenders, and Specialists
     # Attackers want weapons, which will be represented by 1
     # Defenders want armor, whcih will be represented by 2
@@ -52,14 +62,23 @@ def recommend(budget: int, enemy_type: str, role: str):
     object_type = role_map.get(role.upper(),0)
 
     # Attackers get weapons that are strong against enemy type
-    if object_type == 1 or object_type == 3:
+    if object_type == 1:
         e_type = enemy_type_attack_map.get(enemy_type.upper(), 0)
+    
+    # Defender get armor of the same type as their enemy
+    elif object_type == 2:
+        e_type = enemy_type_defense_map.get(enemy_type.upper(), 0)
+    
+    # Misc. items are equally strong against all types, so specialists get a random type of misc. item
+    else:
+        e_type = random.randint(1, 4)
+    
 
 
     with db.engine.begin() as connection:
         # Create our vector of given data
         given_vec = [budget, e_type, object_type]
-
+        print(given_vec)
         # Stores a list of all item vectors that we have in our item plan where we have at least one of those items in stock
         item_vecs = connection.execute(sqlalchemy.text("""SELECT item_vec FROM items_plan
                                                             JOIN items_ledger ON items_plan.id = items_ledger.item_id
