@@ -17,6 +17,41 @@ class Mod(BaseModel):
     quantity: int
     compatible: list[str]
 
+@router.post("/attach/mods")
+def attach_mods(mod_catalog: list[Mod]):
+    with db.engine.begin() as connection:
+        base_items = connection.execute(sqlalchemy.text("""select item_id, item_sku, type, sum(qty_change) as qty_change from items_ledger
+                                           join items_plan on items_ledger.item_id = items_plan.id
+                                           where items_plan.mod_id = 0
+                                           group by item_id, item_sku, type
+                                           having sum(qty_change) > 0"""))
+        planned_items = connection.execute(sqlalchemy.text("select * from items_plan where not mod_id = 0"))
+
+        base_items_dict = [row._asdict() for row in base_items.fetchall()] # Rows saved as dictionaries of all items eligible to be modded
+        planned_items_dict = [row._asdict() for row in planned_items.fetchall()] # All possible planned items saved as dictionaries
+
+        final_items = []
+        used_items_dict = []
+        for mod in mod_catalog:
+            quantity = mod.quantity
+            for item in base_items_dict:
+                if item["type"] in mod.compatible and quantity != 0: # If there are mods that are available and we have weapons to mod, add them!
+                    used_item = item
+                    used_item["qty_change"] = -1*min(item["qty_change"], mod.quantity) # Attach until we run out of weapons or mods.
+                    used_item["credit_change"] = 0 
+                    final_items += [{"qty_change": -1*used_item["qty_change"], 
+                                     "item_id": next(i["id"] for i in planned_items_dict if i["sku"] == mod.sku + "_" + item["item_sku"]),
+                                     "item_sku": mod.sku + "_" + item["item_sku"],
+                                     "credit_change": 0}] # Dictionary row to add to the ledger
+                    used_items_dict += [used_item] # Dictionary row to add to the ledger, subtracts base item
+                    quantity += used_item["qty_change"] # The quantity variable keeps track of how many mods are left to use.
+        if used_items_dict and final_items:
+            connection.execute(sqlalchemy.text("""insert into items_ledger (qty_change, item_id, item_sku, credit_change) 
+                                               values (:qty_change, :item_id, :item_sku, :credit_change)"""), used_items_dict + final_items) # Insert all changes (Base items removed), modded versions added
+            return "Your mods are now attached. You're welcome!"
+        else:
+            return "No mods attached. No items to attach to, or you put in 0 mods!"
+
 @router.post("/purchase/mods")
 def purchase_mods(mod_catalog: list[Mod]):
     '''
