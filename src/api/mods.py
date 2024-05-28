@@ -18,7 +18,7 @@ class Mod(BaseModel):
     compatible: list[str]
 
 @router.post("/attach/mods")
-def attach_mods(mod_catalog: list[Mod]):
+def attach_mods():
     with db.engine.begin() as connection:
         base_items = connection.execute(sqlalchemy.text("""select item_id, item_sku, type, sum(qty_change) as qty_change from items_ledger
                                            join items_plan on items_ledger.item_id = items_plan.id
@@ -26,6 +26,9 @@ def attach_mods(mod_catalog: list[Mod]):
                                            group by item_id, item_sku, type
                                            having sum(qty_change) > 0"""))
         planned_items = connection.execute(sqlalchemy.text("select * from items_plan where not mod_id = 0"))
+        mod_catalog = connection.execute(sqlalchemy.text("""select mods_plan.id, mods_plan.sku, mods_plan.compatible, mods_plan.type, sum(qty_change) as quantity 
+                                                         from mods_ledger join mods_plan on mods_ledger.mod_id = mods_plan.id 
+                                                         group by mods_plan.id, mods_plan.sku, mods_plan.compatible, mods_plan.type"""))
 
         base_items_dict = [row._asdict() for row in base_items.fetchall()] # Rows saved as dictionaries of all items eligible to be modded
         planned_items_dict = [row._asdict() for row in planned_items.fetchall()] # All possible planned items saved as dictionaries
