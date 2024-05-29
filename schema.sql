@@ -27,7 +27,9 @@ create table
     item_id integer null,
     item_sku text null,
     credit_change integer null,
+    customer_id integer null,
     constraint items_ledger_pkey primary key (id),
+    constraint items_ledger_customer_id_fkey foreign key (customer_id) references customers (id),
     constraint public_items_ledger_item_id_fkey foreign key (item_id) references items_plan (id)
   ) tablespace pg_default;
 
@@ -53,19 +55,57 @@ create table
     constraint customers_pkey primary key (id)
   ) tablespace pg_default;
 
-INSERT INTO items_plan VALUES (1, 'weapon', 40, 0, 'GALACTIC_SPEAR');
-INSERT INTO items_plan VALUES (2, 'weapon', 35, 0, 'RAINBOW_PISTOL');
-INSERT INTO items_plan VALUES (3, 'weapon', 45, 0, 'MYTHIC_CROSSBOW');
-
-INSERT INTO items_ledger VALUES (1, now(), 3, 1, 'GALACTIC_SPEAR', -90);
-INSERT INTO items_ledger VALUES (2, now(), 4, 1, 'GALACTIC_SPEAR', -120);
+-- NOTE: there should be a better way to do this .. 
+-- insert all possbile mods into plan
+-- NOTE: since every mod is compatabile with everything, second to last column is unnecessary
 
 INSERT INTO mods_plan VALUES (0, 'NONE', 0, ARRAY['weapon', 'armor', 'other'], NULL);
+INSERT INTO mods_plan VALUES (1, 'FIRE', 0, ARRAY['weapon', 'armor', 'other'], NULL);
+INSERT INTO mods_plan VALUES (2, 'EARTH', 0, ARRAY['weapon', 'armor', 'other'], NULL);
+INSERT INTO mods_plan VALUES (3, 'WATER', 0, ARRAY['weapon', 'armor', 'other'], NULL);
 
-INSERT INTO items_ledger VALUES (3, now(), 10, 2, 'MYTHIC_CROSSBOW', -1000);
+-- insert all possible items into plan
 
-INSERT INTO mods_plan VALUES (1, 'FLAMING_BLADE', 20, ARRAY['weapon'], 'fire');
-INSERT INTO mods_ledger VALUES (1, now(), 1, 1, 'FLAMING_BLADE', -10);
+INSERT INTO items_plan VALUES (1, 'weapon', 30, 0, 'LONGSWORD');
+INSERT INTO items_plan VALUES (2, 'weapon', 50, 1, 'FIRE_LONGSWORD');
+INSERT INTO items_plan VALUES (3, 'weapon', 55, 2, 'EARTH_LONGSWORD');
+INSERT INTO items_plan VALUES (4, 'weapon', 45, 3, 'WATER_LONGSWORD');
+
+INSERT INTO items_plan VALUES (5, 'weapon', 25, 0, 'PISTOL');
+INSERT INTO items_plan VALUES (6, 'weapon', 45, 1, 'FIRE_PISTOL');
+INSERT INTO items_plan VALUES (7, 'weapon', 50, 2, 'EARTH_PISTOL');
+INSERT INTO items_plan VALUES (8, 'weapon', 40, 3, 'WATER_PISTOL');
+
+INSERT INTO items_plan VALUES (9, 'armor', 40, 0, 'SHIELD');
+INSERT INTO items_plan VALUES (10, 'armor', 60, 1, 'FIRE_SHIELD');
+INSERT INTO items_plan VALUES (11, 'armor', 65, 2, 'EARTH_SHIELD');
+INSERT INTO items_plan VALUES (12, 'armor', 55, 3, 'WATER_SHIELD');
+
+INSERT INTO items_plan VALUES (13, 'armor', 25, 0, 'HELMET');
+INSERT INTO items_plan VALUES (14, 'armor', 45, 1, 'FIRE_HELMET');
+INSERT INTO items_plan VALUES (15, 'armor', 50, 2, 'EARTH_HELMET');
+INSERT INTO items_plan VALUES (16, 'armor', 40, 3, 'WATER_HELMET');
+
+INSERT INTO items_plan VALUES (17, 'other', 35, 0, 'STAFF');
+INSERT INTO items_plan VALUES (18, 'other', 55, 1, 'FIRE_STAFF');
+INSERT INTO items_plan VALUES (19, 'other', 60, 2, 'EARTH_STAFF');
+INSERT INTO items_plan VALUES (20, 'other', 50, 3, 'WATER_STAFF');
+
+INSERT INTO items_plan VALUES (21, 'other', 30, 0, 'CHAINLINK');
+INSERT INTO items_plan VALUES (22, 'other', 50, 1, 'FIRE_CHAINLINK');
+INSERT INTO items_plan VALUES (23, 'other', 55, 2, 'EARTH_CHAINLINK');
+INSERT INTO items_plan VALUES (24, 'other', 45, 3, 'WATER_CHAINLINK');
+
+-- make sure some stuff will work
+
+INSERT INTO items_ledger VALUES (1, now(), 10, 1, 'LONGSWORD', -200, 0);
+INSERT INTO items_ledger VALUES (2, now(), 8, 9, 'SHIELD', -240, 0);
+INSERT INTO mods_ledger VALUES (1, now(), 6, 1, 'FIRE', -60);
 
 -- NOTE: this is just to give us some credits to work with 
+
 INSERT INTO mods_ledger VALUES (2, now(), 0, 0, 'NONE', 2000);
+
+-- we should be the "base customer"
+
+INSERT INTO customers VALUES (0, now(), 'Fallen Stars', 'other')

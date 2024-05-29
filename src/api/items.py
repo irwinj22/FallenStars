@@ -24,7 +24,7 @@ def purchase_items(item_catalog: list[Item]):
 
     '''
     Current logic: 
-    buy 5 RAINBOW_PISTOL, if possible (could be restrained by credits or num offered)
+    buy 5 PISTOL, if possible (could be restrained by credits or num offered)
     --> if can't buy 5, just buy as many as possible 
     '''
 
@@ -41,7 +41,7 @@ def purchase_items(item_catalog: list[Item]):
 
     # iterate through each item being offered by Nurane, buy according to logic specified above
     for item in item_catalog: 
-        if item.sku == "RAINBOW_PISTOL":
+        if item.sku == "PISTOL":
             num_can_afford = credits // item.price 
             num_possibile = min(5, min(num_can_afford, item.quantity))
             # if possible for us to buy more than one, then add to order

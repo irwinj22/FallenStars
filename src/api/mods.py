@@ -19,6 +19,10 @@ class Mod(BaseModel):
 
 @router.post("/attach/mods")
 def attach_mods():
+    '''
+    Attaching mods to items. 
+    '''
+     
     with db.engine.begin() as connection:
         base_items = connection.execute(sqlalchemy.text("""select item_id, item_sku, type, sum(qty_change) as qty_change from items_ledger
                                            join items_plan on items_ledger.item_id = items_plan.id
@@ -66,8 +70,7 @@ def purchase_mods(mod_catalog: list[Mod]):
 
     '''
     Current logic: 
-    buy 3 FLAMING_BLADE, if possible (could be restrained by credits or num offered)
-    --> if can't buy 3, just buy as many as possible 
+    buy up to three mods if FIRE or EARTH (could be 6 total)
     '''
 
     order = []
@@ -83,7 +86,7 @@ def purchase_mods(mod_catalog: list[Mod]):
 
     # iterate through each item being offered by Nurane, buy according to logic specified above
     for mod in mod_catalog: 
-        if mod.sku == "FLAMING_BLADE":
+        if mod.sku == "FIRE" or mod.sku == "EARTH":
             num_can_afford = credits // mod.price 
             num_possibile = min(3, min(num_can_afford, mod.quantity))
             # if possible for us to buy more than one, then add to order
@@ -119,6 +122,3 @@ def purchase_mods(mod_catalog: list[Mod]):
     # TODO: implement the logic of attaching mods to items!!
 
     return order
-
-
-

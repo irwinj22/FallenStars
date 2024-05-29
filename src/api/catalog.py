@@ -10,9 +10,6 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
-# TODO: catalog only gets items, not mods ... but that makes sense because aren't selling mods individually, 
-# only as attachments to items 
-
 router = APIRouter()
 @router.get("/catalog/", tags=["catalog"])
 def get_catalog():
@@ -25,8 +22,8 @@ def get_catalog():
     FROM items_plan
     JOIN items_ledger ON items_ledger.item_id = items_plan.id 
     JOIN mods_plan ON mods_plan.id = items_plan.mod_id
-    WHERE (items_plan.price + mods_plan.markup) > 0
     GROUP BY items_plan.id, items_plan.sku, items_plan.type, mods_plan.id, mods_plan.sku
+    HAVING SUM(items_ledger.qty_change) > 0
     '''
   
     with db.engine.begin() as connection:
