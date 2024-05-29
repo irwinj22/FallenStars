@@ -15,6 +15,7 @@ create table
     price integer null,
     mod_id integer null,
     sku text null,
+    item_vec integer[] null,
     constraint items_plan_pkey primary key (id),
     constraint public_items_plan_mod_id_fkey foreign key (mod_id) references mods_plan (id)
   ) tablespace pg_default;
@@ -59,10 +60,10 @@ create table
 -- insert all possbile mods into plan
 -- NOTE: since every mod is compatabile with everything, second to last column is unnecessary
 
-INSERT INTO mods_plan VALUES (0, 'NONE', 0, ARRAY['weapon', 'armor', 'other'], NULL);
-INSERT INTO mods_plan VALUES (1, 'FIRE', 0, ARRAY['weapon', 'armor', 'other'], NULL);
-INSERT INTO mods_plan VALUES (2, 'EARTH', 0, ARRAY['weapon', 'armor', 'other'], NULL);
-INSERT INTO mods_plan VALUES (3, 'WATER', 0, ARRAY['weapon', 'armor', 'other'], NULL);
+INSERT INTO mods_plan VALUES (0, 'BASIC', 0, ARRAY['weapon', 'armor', 'other'], 'basic');
+INSERT INTO mods_plan VALUES (1, 'FIRE', 0, ARRAY['weapon', 'armor', 'other'], 'fire');
+INSERT INTO mods_plan VALUES (2, 'EARTH', 0, ARRAY['weapon', 'armor', 'other'], 'earth');
+INSERT INTO mods_plan VALUES (3, 'WATER', 0, ARRAY['weapon', 'armor', 'other'], 'water');
 
 -- insert all possible items into plan
 
