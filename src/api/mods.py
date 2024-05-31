@@ -76,8 +76,8 @@ def purchase_mods(mod_catalog: list[Mod]):
     order = []
 
     credits_sql = '''
-    SELECT (SELECT SUM(items_ledger.credit_change) FROM items_ledger) + 
-           (SELECT SUM(mods_ledger.credit_change) FROM mods_ledger) AS credits
+    SELECT COALESCE((SELECT SUM(items_ledger.credit_change) FROM items_ledger), 0) + 
+           COALESCE((SELECT SUM(mods_ledger.credit_change) FROM mods_ledger), 0) AS credits
     '''
 
     # NOTE: this will return None if there are no entries in either of the ledgers ... 
@@ -118,7 +118,5 @@ def purchase_mods(mod_catalog: list[Mod]):
         with db.engine.begin() as connection:
             id = connection.execute(sqlalchemy.text(id_sql), [{"sku":line_item['sku']}]).scalar()
             connection.execute(sqlalchemy.text(pur_sql), [{"qty":line_item['qty'], "mod_id":id, "mod_sku":line_item['sku'], "credit_change": -line_item['price'] * line_item['qty']}])
-
-    # TODO: implement the logic of attaching mods to items!!
 
     return order
