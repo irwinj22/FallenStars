@@ -1,408 +1,123 @@
 # API Specification for FallenStars 
 
-## 1. Customer Purchases
+## 1. Items
+Where all purchasing transactions happen between us and our items dealer.
+1. Purchase Items
 
-API calls are made in this sequence during customer purchase: 
-1. Get Purchase Catalog
-2. New Cart
-3. Add Item to Cart (Repeatable)
-4. Add Modification Plan (Repeatable)
-5. Checkout
+1.1 Purchase Items (POST)
+**Request**
+```json
+[
+  {
+    "sku": "string",
+    "type": "string",
+    "price": 0,
+    "quantity": 0
+  }
+]
+```
 
-1.1 Get Purchase Catalog (GET)   
-Retrives catalog of purchasable items. 
-
-**Response**:
-
+**Response**
 ```json
 [
     {
-        "sku": "string", 
-        "name": "string",
-        "quantity": "integer",
-        "price": "integer", 
-        "modifiers": ["s", "t", "r", "..."]
+        "qty": "int", 
+        "item_id": "int",
+        "item_sku": "string", 
+        "credit_change": "int"
     }
 ]
 ```
 
-1.2 New Cart (POST)   
-Creates new cart for specified customer. 
+## 2. Catalog 
+Get all items in the shop.
 
-**Request**:
-
-```json
-{
-  "customer_name": "string",
-  "character_class": "string",
-  "level": "number"
-}
-```
-
-**Response**:
-
-```json
-{
-  "cart_id": "string"
-}
-```
-
-1.3 Add Item to Cart (POST)    
-Updates quantity of item in cart.
-
-**Request**:
-
-```json
-{
-  
-  "quantity": "integer"
-}
-```
-
-**Response**:
-
-```json
-{
-    "success": "boolean"
-}
-```
-
-1.4 Add Modification Plan (POST)    
-Add modification(s) to specific item(s) within cart.
-
-**Request**:
-
-```json
-{
-  "modification_plan": ["s", "t", "r", "..."]
-}
-```
-
-**Response**:
-
-```json
-{
-    "success": "boolean"
-}
-```
-
-1.5 Checkout (POST)   
-Checkout process for cart. 
-
-**Response**:
-
-```json
-{
-    "items_and_amount_bought": ["s", "t", "r", "..."]
-    "credits_paid": "integer"
-}
-```
-
-## 2. Customer Rentals   
-API calls are made in this sequence during customer rentals:
-1. Get Rental Catalog
-2. New Cart
-3. Add Item to Cart (Repeatable)
-4. Rental duration (Repeatable)
-5. Checkout
-6. Return
-
-2.1 Get Rental Catalog (GET)   
+2.1 Get Catalog (GET)   
 Retrives catalog of rentable items. 
 
-**Response**:
-
-```json
-[
-    {
-        "sku": "string", 
-        "name": "string",
-        "quantity": "integer",
-        "price": "integer", 
-        "modifiers": ["s", "t", "r", "..."]
-        "expiry_time": "integer"
-    }
-]
-```
-
-2.2 New Cart (POST)   
-Creates new cart for specified customer. 
-
-**Request**:
-
-```json
-{
-  "customer_name": "string",
-  "character_class": "string",
-  "level": "number"
-}
-```
-
-**Response**:
-
-```json
-{
-  "cart_id": "string"
-}
-```
-
-2.3 Add Item to Cart (POST)   
-Updates quantity of item in cart. 
-
-**Request**:
-
-```json
-{
-  "quantity": "integer"
-}
-```
-
-**Response**:
-
-```json
-{
-    "success": "boolean"
-}
-```
-
-2.4 Rental Duration (POST)   
-Updates duration of rental for specified item in cart. 
-
-**Request**:
-
-```json
-{
-  "expiry_time": "integer"
-}
-```
-
-**Response**:
-
-```json
-{
-    "success": "boolean"
-}
-```
-
-
-
-2.5 Checkout (POST)   
-Checkout process for cart.
-
-**Response**:
-
-```json
-{
-    "items_and_amount_bought": ["s", "t", "r", "..."]
-    "checkout_time": "integer"
-    "credits_paid": "integer"
-}
-```
-
-2.6 Return (GET)
-Item is returned after a certain number of ticks.
-
-**Response**:
-
-```json
-{
-    "success": "boolean"
-}
-```
-
-## 3. Customer Returns
-API calls are made in this sequence during customer returns:
-1. Get Customer Catalog
-2. Evaluate Condition
-3. Update Inventory
-4. Issue Refund
-
-3.1 Get Cusomter Catalog (GET)   
-Customers presents list of items (and their conditions) to be evaluated for possibility of return. 
-
-**Response**:
-
-```json
-{
-    "to_be_evaluated": [["s", "condition"], ["t", "condition"], ["r", "condition"], ["...", "condition"]]
-}
-```
-
-3.2 Evaluate Condition ()   
-Condition of each item in customer catalogue is evaluated. 
-
-**Request**:
-
-```json
-{
-    "to_be_evaluated": [["s", "condition"], ["t", "condition"], ["r", "condition"], "..."]
-}
-```
-
-**Response**:
-
-```json
-{
-    "success": [b, o, o, l, ...]
-}
-```
-
-3.3. Update Inventory (POST)   
-Inventory updated with all items that had returnable condition
-
-**Response**:
-
-```json
-{
-    "good_condition": ["s", "t", "r", ...]
-}
-```
-
-3.4 Issue Refund (POST)   
-Refund issued to customer
-
-**Request**:
-
-```json
-{
-    "refund_amount": "integer"
-}
-```
-
-**Response**:
-
-```json
-{
-    "success": [b, o, o, l, ...]
-}
-```
-
-##  4. Inventory
-API calls are made in this sequence during Inventory: 
-1. Get Complete Inventory
-2. Create Weapon Purchase Plan
-3. Create Armor Purchase Plan
-4. Create Item Purchase Plan
-5. Execute Weapon Purchases
-6. Execute Misc Purchases
-
-4.1 Get Complete Inventory (GET)   
-Complete Inventory of shop is retrieved
-
-**Response**:
-
-```json
-{
-    "num_weaponry": "integer",
-    "num_armor": "integer",
-    "num_items": "integer",
-    "num_rental": "integer",
-    "credits": "integer"
-}
-```
-
-4.2 Create Weapon Purchase Plan (POST)   
-Purchase plan is created based on current inventory.
-
-**Request**
-```json
-[
-    {
-        "sku": "string",
-        "name": "string",
-        "type": "string",
-        "damage": "string",
-        "price": "integer",
-        "quantity": "integer"
-    }
-]
-```
 **Response**
 ```json
 [
     {
-        "sku": "string", /*Needs to match a sku in the request catalog */
-        "quantity": "integer" /*Needs to be equal or less than in request catalog */
-    }
+        "sku" : "string", 
+        "type" : "string",
+        "mod" : "string",
+        "price" : "int",
+        "qty" : "int"
+    }      
 ]
 ```
 
-4.3 Create Armor Purchase Plan (POST)
-Purchase plan is created based on current inventory. Since weapons have an additional parameter, they are separate from armor and items.
+## 3. Mods
+API calls are made in this sequence to purchase and modify items:
+1. Purchase Mods
+2. Attach Mods
+
+3.1 Purchase Mods (POST) 
+Mods are purchased based off the current catalog available for the shop to buy.
+
 **Request**
 ```json
 [
-    {
-        "sku": "string",
-        "name": "string",
-        "type": "string",
-        "price": "integer",
-        "quantity": "integer"
-    }
+  {
+    "sku": "string",
+    "type": "string",
+    "price": 0,
+    "quantity": 0,
+    "compatible": [
+      "string"
+    ]
+  }
 ]
 ```
+
 **Response**
 ```json
 [
     {
-        "sku": "string", /*Needs to match a sku in the request catalog */
-        "quantity": "integer" /*Needs to be equal or less than in request catalog */
+        "qty": "int", 
+        "mod_id": "int",
+        "mod_sku": "string", 
+        "credit_change": "int"
     }
 ]
 ```
 
-4.4 Item Purchase Plans (POST)
-**Request**
-```json
-[
-    {
-        "sku": "string",
-        "name": "string",
-        "type": "string",
-        "price": "integer",
-        "quantity": "integer"
-    }
-]
-```
+3.2 Attach Mods (POST) 
+All available items that are not modified become modified until either mods or weapons run out.
+
 **Response**
 ```json
-[
-    {
-        "sku": "string", /*Needs to match a sku in the request catalog */
-        "quantity": "integer" /*Needs to be equal or less than in request catalog */
-    }
-]
+"OK" /*if mods were successfully attached.*/
+"ERROR: mods could not be attached. No items to attach to, or 0 mods entered." /*else.*/
 ```
 
-4.5 Execute Weapon Purchase (POST)   
-Purchase plan executed, newly purchased items are returned
-**Request** 
+##  4. Checkout
+API calls are made in this sequence during Checkout: 
+1. Checkout
+
+4.1 Checkout (POST)
+A customer makes a purchase and logs their relevant information.
+
+**Request**
 ```json
-[
+{
+  "customer": {
+    "name": "string",
+    "role": "string"
+  },
+  "checkout_items": [
     {
-        "sku": "string", /*All lines consisting of items that passed purchase plan */
-        "name": "string",
-        "type": "string",
-        "damage": "string",
-        "price": "integer",
-        "quantity": "integer"
+      "item_sku": "string",
+      "qty": 0
     }
-]
+  ]
+}
 ```
 
-4.6 Execute Misc. Purchase (POST)
-Purchase plan executed, newly purchased items are returned
-**Request** 
+**Response**:
 ```json
-[
-    {
-        "sku": "string", /*All lines consisting of items that passed purchase plan */
-        "name": "string",
-        "type": "string",
-        "price": "integer",
-        "quantity": "integer"
-    }
-]
+"OK"
 ```
 
 ## 5. Admin
