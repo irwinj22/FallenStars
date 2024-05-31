@@ -29,7 +29,7 @@ def cosine_distance(v1, v2):
     norm_v2 = np.linalg.norm(v2)
     return 1-(dot_product / (norm_v1 * norm_v2))
 
-@router.post("/recommend")
+@router.get("/recommend")
 def recommend(customer:Customer, budget: int, enemy_element: str):
     with db.engine.begin() as connection:
         # check if customer record exists, get id
@@ -176,7 +176,7 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
     return {"Rec. Weapon": rec_weapon_sku, "Rec. Armor": rec_armor_sku, "Rec. Other": rec_other_sku, "Total Cost": total_price}
 
 
-@router.post("/recommend/swap")
+@router.post("/swap")
 def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
     # Initializing the list of items the customer will be "buying"
     checkout_list = []
@@ -232,4 +232,5 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
             # Stages the recommended other to be checked out
             checkout_list.append(CheckoutItem(item_sku=rec_skus[2], qty=1))
 
-    return checkout.checkout(customer, checkout_list)
+    checkout.checkout(customer, checkout_list)
+    return "OK"

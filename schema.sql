@@ -7,7 +7,8 @@ create table
     recent_w_rec text null,
     recent_a_rec text null,
     recent_o_rec text null,
-    constraint customers_pkey primary key (id)
+    constraint customers_pkey primary key (id),
+    constraint customers_name_key unique (name)
   ) tablespace pg_default;
 
 create table
