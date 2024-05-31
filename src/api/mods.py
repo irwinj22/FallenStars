@@ -52,8 +52,10 @@ def attach_mods():
                                      "item_sku": mod.sku + "_" + item["item_sku"],
                                      "credit_change": 0}] # Dictionary row to add to the ledger
                     used_items_dict += [used_item] # Dictionary row to add to the ledger, subtracts base item
-                    quantity += used_item["qty_change"] # The quantity variable keeps track of how many mods are left to use.
-            mod_catalog_dict += [{"qty_change": quantity - mod.quantity, "mod_id": mod.id, "mod_sku": mod.sku, "credit_change": 0}]
+                    quantity += used_item["qty_change"] # The quantity variable keeps track of how many mods are left to use
+            # only want to add to mod ledger if there is quantity change
+            if quantity - mod.quantity != 0:
+                mod_catalog_dict += [{"qty_change": quantity - mod.quantity, "mod_id": mod.id, "mod_sku": mod.sku, "credit_change": 0}]
         if used_items_dict and final_items:
             connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change) 
                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change)"""), used_items_dict + final_items) # Insert all changes (Base items removed), modded versions added
