@@ -24,15 +24,15 @@ def attach_mods():
     '''
      
     with db.engine.begin() as connection:
-        base_items = connection.execute(sqlalchemy.text("""select item_id, item_sku, type, sum(qty_change) as qty_change from items_ledger
-                                           join items_plan on items_ledger.item_id = items_plan.id
-                                           where items_plan.mod_id = 0
-                                           group by item_id, item_sku, type
-                                           having sum(qty_change) > 0"""))
-        planned_items = connection.execute(sqlalchemy.text("select * from items_plan where not mod_id = 0"))
-        mod_catalog = connection.execute(sqlalchemy.text("""select mods_plan.id, mods_plan.sku, mods_plan.compatible, mods_plan.type, sum(qty_change) as quantity 
-                                                         from mods_ledger join mods_plan on mods_ledger.mod_id = mods_plan.id 
-                                                         group by mods_plan.id, mods_plan.sku, mods_plan.compatible, mods_plan.type"""))
+        base_items = connection.execute(sqlalchemy.text("""SELECT item_id, item_sku, type, SUM(qty_change) AS qty_change FROM items_ledger
+                                           JOIN items_plan ON items_ledger.item_id = items_plan.id
+                                           WHERE items_plan.mod_id = 0
+                                           GROUP BY item_id, item_sku, type
+                                           HAVING SUM(qty_change) > 0"""))
+        planned_items = connection.execute(sqlalchemy.text("SELECT * FROM items_plan WHERE NOT mod_id = 0"))
+        mod_catalog = connection.execute(sqlalchemy.text("""SELECT mods_plan.id, mods_plan.sku, mods_plan.compatible, mods_plan.type, sum(qty_change) AS quantity 
+                                                         FROM mods_ledger JOIN mods_plan ON mods_ledger.mod_id = mods_plan.id 
+                                                         GROUP BY mods_plan.id, mods_plan.sku, mods_plan.compatible, mods_plan.type"""))
 
         base_items_dict = [row._asdict() for row in base_items.fetchall()] # Rows saved as dictionaries of all items eligible to be modded
         planned_items_dict = [row._asdict() for row in planned_items.fetchall()] # All possible planned items saved as dictionaries
@@ -45,7 +45,7 @@ def attach_mods():
             for item in base_items_dict:
                 if item["type"] in mod.compatible and quantity != 0: # If there are mods that are available and we have weapons to mod, add them!
                     used_item = item
-                    used_item["qty_change"] = -1*min(item["qty_change"], mod.quantity) # Attach until we run out of weapons or mods.
+                    used_item["qty_change"] = -1*min(abs(item["qty_change"]), abs(mod.quantity)) # Attach until we run out of weapons or mods.
                     used_item["credit_change"] = 0 
                     final_items += [{"qty_change": -1*used_item["qty_change"], 
                                      "item_id": next(i["id"] for i in planned_items_dict if i["sku"] == mod.sku + "_" + item["item_sku"]),
@@ -55,12 +55,12 @@ def attach_mods():
                     quantity += used_item["qty_change"] # The quantity variable keeps track of how many mods are left to use.
             mod_catalog_dict += [{"qty_change": quantity - mod.quantity, "mod_id": mod.id, "mod_sku": mod.sku, "credit_change": 0}]
         if used_items_dict and final_items:
-            connection.execute(sqlalchemy.text("""insert into items_ledger (qty_change, item_id, item_sku, credit_change) 
-                                               values (:qty_change, :item_id, :item_sku, :credit_change)"""), used_items_dict + final_items) # Insert all changes (Base items removed), modded versions added
-            connection.execute(sqlalchemy.text("insert into mods_ledger (qty_change, mod_id, mod_sku, credit_change) values (:qty_change, :mod_id, :mod_sku, :credit_change)"), mod_catalog_dict)
-            return "Your mods are now attached. You're welcome!"
+            connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change) 
+                                               VALUES (:qty_change, :item_id, :item_sku, :credit_change)"""), used_items_dict + final_items) # Insert all changes (Base items removed), modded versions added
+            connection.execute(sqlalchemy.text("INSERT INTO mods_ledger (qty_change, mod_id, mod_sku, credit_change) VALUES (:qty_change, :mod_id, :mod_sku, :credit_change)"), mod_catalog_dict)
+            return "OK"
         else:
-            return "No mods attached. No items to attach to, or you put in 0 mods!"
+            return "ERROR: mods could not be attached. No items to attach to, or 0 mods entered."
 
 @router.post("/purchase/mods")
 def purchase_mods(mod_catalog: list[Mod]):
@@ -88,7 +88,7 @@ def purchase_mods(mod_catalog: list[Mod]):
     for mod in mod_catalog: 
         if mod.sku == "FIRE" or mod.sku == "EARTH":
             num_can_afford = credits // mod.price 
-            num_possibile = min(3, min(num_can_afford, mod.quantity))
+            num_possibile = min(2, min(num_can_afford, mod.quantity))
             # if possible for us to buy more than one, then add to order
             if num_possibile > 0:
                 order.append(

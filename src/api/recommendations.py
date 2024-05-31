@@ -115,6 +115,7 @@ def recommend(budget: int, enemy_element: str, role: str):
                                                             HAVING SUM(qty_change) > 0"""), [{"x":"armor"}])
         min_dist = 2
         for row in a_item_vecs:
+            # NOTE: this line is throwing an erro .. comparison between None and int
             if cosine_distance(row.item_vec, a_given_vec) < min_dist:
                 min_dist = cosine_distance(row.item_vec, a_given_vec)
                 a_rec_vec = row.item_vec

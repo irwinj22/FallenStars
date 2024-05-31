@@ -31,11 +31,10 @@ def purchase_items(item_catalog: list[Item]):
     order = []
 
     credits_sql = '''
-    SELECT (SELECT SUM(items_ledger.credit_change) FROM items_ledger) + 
-           (SELECT SUM(mods_ledger.credit_change) FROM mods_ledger) AS credits
+    SELECT COALESCE((SELECT SUM(items_ledger.credit_change) FROM items_ledger), 0) + 
+           COALESCE((SELECT SUM(mods_ledger.credit_change) FROM mods_ledger), 0) AS credits
     '''
 
-    # NOTE: this will return None if there are no entries in either of the ledgers ... 
     with db.engine.begin() as connection:
         credits = connection.execute(sqlalchemy.text(credits_sql)).scalar()
 

@@ -1,289 +1,140 @@
 # Example workflow 1 
-Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a look at the catalog, and purchase two laser pistols according to the given plan. We also buy a calibration modifier according to a separate plan. We only have one modifier, so we apply it to one of the pistols and increase the price.  
+Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a look at the weapons offerings and purchase 5 pistols. Then, we look at the mods and purchase 2 FIRE and 2 EARTH. Finally, we attach all the modifiers to weapons. 
 
-1. call POST /items/weapon_plan and determine what weapons to buy 
-2. call POST /items/deliver_weapon to add weapon ledger entry
-3. call POST /modifier/plan and determine what modifiers to buy
-4. call POST /modifier/deliver to add modifier ledger entry    
-
+1. Call POST/items/purchase/items to purchase the pistols.
+2. Call POST/mods/purchase/mods to purchase the modifications. 
+3. Call POST/mods/attach/mods to attach the modifications to the weapons.
 
 # Testing results
 1. curl -X 'POST' \
-  'http://127.0.0.1:8000/items/weapon_plan' \
+  'http://127.0.0.1:8000/items/purchase/items' \
   -H 'accept: application/json' \
   -H 'access_token: armory' \
   -H 'Content-Type: application/json' \
   -d '[
   {
-    "sku": "LASER_PISTOL",
-    "type": "pistol",
-    "damage": "spray",
-    "price": 10,
+    "sku": "PISTOL",
+    "type": "weapon",
+    "price": 20,
     "quantity": 10
-  }
-]'   
-[
-  {
-    "sku": "LASER_PISTOL",
-    "quantity": 2
-  }
-]    
-
-2. curl -X 'POST' \
-  'http://127.0.0.1:8000/items/deliver_weapon?order_id=2' \
-  -H 'accept: application/json' \
-  -H 'access_token: armory' \
-  -H 'Content-Type: application/json' \
-  -d '[
-  {
-    "sku": "LASER_PISTOL",
-    "type": "pistol",
-    "damage": "spray",
-    "price": 10,
-    "quantity": 10
-  }
-]
-'     
-"OK"    
-
-3. curl -X 'POST' \
-  'http://127.0.0.1:8000/modifier/plan' \
-  -H 'accept: application/json' \
-  -H 'access_token: armory' \
-  -H 'Content-Type: application/json' \
-  -d '[
-  {
-    "sku": "CALIBRATION",
-    "name": "calibration",
-    "type": "pistol",
-    "quantity": 10,
-    "price": 20
   }
 ]'
+
 [
   {
-    "sku": "CALIBRATION",
-    "quantity": 2
+    "sku": "PISTOL",
+    "type": "weapon",
+    "price": 20,
+    "qty": 5
   }
 ]
 
-5. curl -X 'POST' \
-  'http://127.0.0.1:8000/modifier/deliver/2' \
+2. curl -X 'POST' \
+  'http://127.0.0.1:8000/mods/purchase/mods' \
   -H 'accept: application/json' \
   -H 'access_token: armory' \
   -H 'Content-Type: application/json' \
   -d '[
   {
-    "sku": "CALIBRATION",
-    "quantity": 2
+    "sku": "FIRE",
+    "type": "fire",
+    "price": 10,
+    "quantity": 10,
+    "compatible": [
+      "weapon", "armor", "other"
+    ]
+  }, 
+  {
+    "sku": "EARTH",
+    "type": "earth",
+    "price": 10,
+    "quantity": 10,
+    "compatible": [
+      "weapon", "armor", "other"
+    ]
   }
-]'   
+]'
+
+[
+  {
+    "sku": "FIRE",
+    "type": "fire",
+    "price": 10,
+    "qty": 3
+  },
+  {
+    "sku": "EARTH",
+    "type": "earth",
+    "price": 10,
+    "qty": 3
+  }
+]
+
+3. curl -X 'POST' \
+  'http://127.0.0.1:8000/mods/attach/mods' \
+  -H 'accept: application/json' \
+  -H 'access_token: armory' \
+  -d ''
+
 "OK"
 
+
+
 # Example Workflow 2 
-Nicholas the Dawg wants to buy a new sword to show off to his friends. So, he asks to see the purchase catalog of our shop. He sees that we are selling 2 katanas for 70 credits and 1 longsword for 80 credits for permanent use. Nicholas wants both katanas.
+Nicholas the Dawg wants to buy a new EARTH PISTOL to show off to his friends. So, he asks to see the purchase catalog of our shop. He sees that we are selling 1 PISTOlL, 2 FIRE_PISTOL, and 2 EARTH_PISTOL. Nicholas sees that we are offering what he wants, so he purchases the EARTH_PISTOL for 50 credits. 
 
 1. call GET/catalog to see what is available. 
-2. call POST/carts to create a new cart.
-3. call POST /carts/items/ to add two katanas to cart. 
-4. call POST /carts/checkout to purchase.
+2. call GET/checkout to purchase the EARTH_PISTOL.
 
 # Testing Results
 
-1.
-curl -X 'GET' \
+1. curl -X 'GET' \
   'http://127.0.0.1:8000/catalog/' \
   -H 'accept: application/json'
+
 [
   {
-    "thing_id": 8,
-    "sku": "LONGSWORD",
-    "name": "longsword",
-    "type": "melee",
-    "damage": "heavy",
-    "modifier": null,
-    "price": 80,
-    "rental": false
+    "sku": "PISTOL",
+    "type": "weapon",
+    "mod": "BASIC",
+    "price": 25,
+    "qty": 1
   },
   {
-    "thing_id": 10,
-    "sku": "KATANA",
-    "name": "katana",
-    "type": "melee",
-    "damage": "medium",
-    "modifier": null,
-    "price": 35,
-    "rental": false
+    "sku": "FIRE_PISTOL",
+    "type": "weapon",
+    "mod": "FIRE",
+    "price": 45,
+    "qty": 2
   },
   {
-    "thing_id": 9,
-    "sku": "LASER_PISTOL",
-    "name": "laser pistol",
-    "type": "pistol",
-    "damage": "heavy",
-    "modifier": null,
-    "price": 10,
-    "rental": false
-  },
-  {
-    "thing_id": 10,
-    "sku": "KATANA",
-    "name": "katana",
-    "type": "melee",
-    "damage": "medium",
-    "modifier": null,
-    "price": 35,
-    "rental": false
-  },
-  {
-    "thing_id": 9,
-    "sku": "LASER_PISTOL",
-    "name": "laser pistol",
-    "type": "pistol",
-    "damage": "heavy",
-    "modifier": null,
-    "price": 10,
-    "rental": false
+    "sku": "EARTH_PISTOL",
+    "type": "weapon",
+    "mod": "EARTH",
+    "price": 50,
+    "qty": 2
   }
 ]
 
-
-2. 
-curl -X 'POST' \
-  'http://127.0.0.1:8000/carts/' \
+2. curl -X 'POST' \
+  'http://127.0.0.1:8000/checkout/' \
   -H 'accept: application/json' \
-  -H 'access_token: armory' \
   -H 'Content-Type: application/json' \
   -d '{
-  "customer_name": "Nicholas the Dawg",
-  "character_class": "Canine",
-  "level": 9
-}'  
-{
-  "cart_id": 7
-}
+  "customer": {
+    "name": "Nicholas the Dawg",
+    "role": "Dawg"
+  },
+  "checkout_items": [
+    {
+      "item_sku": "EARTH_PISTOL",
+      "qty": 1
+    }
+  ]
+}'
 
-3. 
-curl -X 'POST' \
-  'http://127.0.0.1:8000/carts/7/items/{item_sku}?type=melee&type_id=2' \
-  -H 'accept: application/json' \
-  -H 'access_token: armory' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "quantity": 2
-}'     
-"OK"
-
-4. 
-curl -X 'POST' \
-  'http://127.0.0.1:8000/carts/7/checkout' \
-  -H 'accept: application/json' \
-  -H 'access_token: armory' \
-  -d ''     
-{
-  "total_purchases": 2,
-  "total_credits_paid": 70
-}
+“OK”
 
 # Example Workflow 3
-Gabe the Babe has an internship as a part-time shepherd for the summer. So, he asks to see the rental catalog. He sees we are offering 1 enchanted staff for 90 credits. Gabe wants the enchanted staff.
-
-1. call GET/catalog to see what's available. 
-2. call POST/carts to create new cart.
-3. call POST/carts/items/enchanted_staff, pass in a quantity of 1.
-4. call POST/carts/checkout to rent the enchanted staff for 90 credits. The return date is set as 2 hours from current time.
-
-
-1.
-curl -X 'GET' \
-  'http://127.0.0.1:8000/catalog/' \
-  -H 'accept: application/json'   
-[
-  {
-    "thing_id": 8,
-    "sku": "LONGSWORD",
-    "name": "longsword",
-    "type": "melee",
-    "damage": "heavy",
-    "modifier": null,
-    "price": 80,
-    "rental": false
-  },
-  {
-    "thing_id": 10,
-    "sku": "KATANA",
-    "name": "katana",
-    "type": "melee",
-    "damage": "medium",
-    "modifier": null,
-    "price": 35,
-    "rental": false
-  },
-  {
-    "thing_id": 9,
-    "sku": "LASER_PISTOL",
-    "name": "laser pistol",
-    "type": "pistol",
-    "damage": "heavy",
-    "modifier": null,
-    "price": 10,
-    "rental": false
-  },
-  {
-    "thing_id": 10,
-    "sku": "KATANA",
-    "name": "katana",
-    "type": "melee",
-    "damage": "medium",
-    "modifier": null,
-    "price": 35,
-    "rental": false
-  },
-  {
-    "thing_id": 9,
-    "sku": "LASER_PISTOL",
-    "name": "laser pistol",
-    "type": "pistol",
-    "damage": "heavy",
-    "modifier": null,
-    "price": 10,
-    "rental": false
-  }
-]
-
-2. 
-curl -X 'POST' \
-  'http://127.0.0.1:8000/carts/' \
-  -H 'accept: application/json' \
-  -H 'access_token: armory' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "customer_name": "Gabe the Babe",
-  "character_class": "Gabriel",
-  "level": 10
-}'
-{
-  "cart_id": 9
-}    
-
-3. 
-curl -X 'POST' \
-  'http://127.0.0.1:8000/carts/9/items/{item_sku}?type=support&type_id=1' \
-  -H 'accept: application/json' \
-  -H 'access_token: armory' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "quantity": 1
-}'    
-"OK"    
-    
-4.    
-curl -X 'POST' \
-  'http://127.0.0.1:8000/carts/9/checkout' \
-  -H 'accept: application/json' \
-  -H 'access_token: armory' \
-  -d ''   
-{
-  "total_purchases": 1,
-  "total_credits_paid": 80
-}
+TODO!
+Should have something to do with recommendations, once that gets done … 

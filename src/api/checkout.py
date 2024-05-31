@@ -16,7 +16,6 @@ class Customer(BaseModel):
 
 class CheckoutItem(BaseModel):
     item_sku: str
-    mod_sku: str
     qty: int
 
 # one Customer will call Checkout, and each Checkout will include one or more CheckoutItems
@@ -49,7 +48,6 @@ def checkout(customer:Customer, checkout_items: list[CheckoutItem]):
     FROM items_plan
     JOIN mods_plan ON mods_plan.id = items_plan.mod_id
     WHERE items_plan.sku = :item_sku
-    AND mods_plan.sku = :mod_sku
     '''
 
     item_sql = '''
@@ -60,7 +58,7 @@ def checkout(customer:Customer, checkout_items: list[CheckoutItem]):
         print(item)
         with db.engine.begin() as connection:
             # get the item_id, total_price for insertion
-            info = connection.execute(sqlalchemy.text(sql), [{"item_sku":item.item_sku, "mod_sku":item.mod_sku}]).fetchone()
+            info = connection.execute(sqlalchemy.text(sql), [{"item_sku":item.item_sku}]).fetchone()
             # make insertion into item_ledger
             connection.execute(sqlalchemy.text(item_sql), 
                                 [{"qty_change":-item.qty, "item_id":info.item_id, "item_sku":item.item_sku, "credit_change":info.total_price, "customer_id":id}])
