@@ -10,8 +10,6 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
-# TODO: implement this so that we can input the correct way, without any error and what nto
-
 router = APIRouter()
 @router.post("/populate/", tags=["populate"])
 def populate():
