@@ -146,5 +146,12 @@ def recommend(budget: int, enemy_element: str, role: str):
     return {"Rec. Weapon": rec_weapon_sku, "Rec. Armor": rec_armor_sku, "Rec. Other": rec_other_sku, "Total Cost": total_price}
 
 
-
-# , curr_weapon:str, curr_armor:str, curr_misc:str
+@router.post("/recommend/swap")
+def swap(name: str):
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("""SELECT item_sku FROM items_ledger
+                                           JOIN items_plan ON items_plan.sku = items_ledger.item_sku
+                                           WHERE items_plan.type = :y AND customer_id = (SELECT id FROM customers
+                                           WHERE name = :x) AS c1
+                                           GROUP BY item_sku
+                                           HAVING SUM(qty_change) > 0"""), [{"x":name, "y":"weapon"}]).fetchall()
