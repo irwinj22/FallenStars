@@ -16,7 +16,7 @@ sequenceDiagram
     T1->>Database: Deduct book cost ($10) from balance
     T1->>Database: conn.execute(sqlalchemy.update(accounts).where(accounts.c.id == 1).values(balance = cur_balance - book_cost(conn, item_purchased_id)))
     Note over T1, T2: Alice's Balance should be $40, but is now $0 due to lost update.
-`
+```
 ## Case 2: Items
 
 
