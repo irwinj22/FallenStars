@@ -232,5 +232,7 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
             # Stages the recommended other to be checked out
             checkout_list.append(CheckoutItem(item_sku=rec_skus[2], qty=1))
 
+    # Performs a checkout on the new items
     checkout.checkout(customer, checkout_list)
+    
     return "OK"
