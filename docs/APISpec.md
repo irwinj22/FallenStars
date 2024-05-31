@@ -539,4 +539,52 @@ Returns the updated items catalog for other endpoints.
 ]
 ```
 
+## 9 Recommendations
+1. Get Recommendations
+2. Make swap based on recommendations
 
+9.1 Get Recommendations (GET)   
+Get a recommended kit of an ideal weapon, armor, and misc. item
+
+**Request**
+```json
+[
+    {
+        "budget": "integer",
+        "enemy_element": "string",
+        "name": "string",
+        "role": "string"
+    }
+]
+```
+
+**Response**:
+
+```json
+{
+    "Rec. Weapon": "string",
+    "Rec. Armor": "string",
+    "Rec. Other": "string",
+    "total_cost": "integer"
+}
+```
+
+9.2 Make Swap Based on Recommendations (POST)   
+The customer trades in their old items for the recommended ones
+
+**Request**
+```json
+[
+    {
+        "weapon": "boolean",
+        "armor": "boolean",
+        "other": "boolean",
+        "name": "string",
+        "role": "string"
+    }
+]
+```
+**Response**
+```python 3
+"OK"
+```
