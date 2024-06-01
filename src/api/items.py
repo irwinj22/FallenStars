@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from src.api import auth
 import sqlalchemy
+from sqlalchemy.exc import DBAPIError
 from src import database as db
 from typing import Literal
 
@@ -67,9 +68,12 @@ def purchase_items(item_catalog: list[Item]):
     '''
 
     # NOTE: extra connection is necessary, as we can't buy items without knowing how much money we have
-    with db.engine.begin() as connection:
-        credits = connection.execute(sqlalchemy.text(credits_sql)).scalar()
-        num_each_type = connection.execute(sqlalchemy.text(items_sql)).all()
+    try:
+        with db.engine.begin() as connection:
+            credits = connection.execute(sqlalchemy.text(credits_sql)).scalar()
+            num_each_type = connection.execute(sqlalchemy.text(items_sql)).all()
+    except DBAPIError as error:
+        print(f"Error returned: <<<{error}>>>")
 
     # storing the num of each type of item 
     # key: type
@@ -127,10 +131,13 @@ def purchase_items(item_catalog: list[Item]):
     '''
 
     # once the order has been created, run through and make the appropriate inserts
-    with db.engine.begin() as connection:
-        for line_item in order:
-            print(line_item)
-            id = connection.execute(sqlalchemy.text(id_sql), [{"sku":line_item['sku']}]).scalar()
-            connection.execute(sqlalchemy.text(pur_sql), [{"qty":line_item['qty'], "item_id":id, "item_sku":line_item['sku'], "credit_change": -line_item['price'] * line_item['qty']}])
+    try: 
+        with db.engine.begin() as connection:
+            for line_item in order:
+                print(line_item)
+                id = connection.execute(sqlalchemy.text(id_sql), [{"sku":line_item['sku']}]).scalar()
+                connection.execute(sqlalchemy.text(pur_sql), [{"qty":line_item['qty'], "item_id":id, "item_sku":line_item['sku'], "credit_change": -line_item['price'] * line_item['qty']}])
+    except DBAPIError as error:
+        print(f"Error returned: <<<{error}>>>")
 
     return order

@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from typing import Literal
+from sqlalchemy.exc import DBAPIError
 
 router = APIRouter(
     prefix="/mods",
@@ -11,10 +13,10 @@ router = APIRouter(
 )
 
 class Mod(BaseModel):
-    sku: str
-    type: str
-    price: int
-    quantity: int
+    sku: Literal["FIRE", "EARTH", "WATER"]
+    type: Literal["fire", "earth", "water"]
+    price: int = Field(gt=0, lt=200)
+    quantity: int = Field(gt=0, lt=20)
 
 @router.post("/attach/mods")
 def attach_mods():
@@ -24,63 +26,62 @@ def attach_mods():
      
     # TODO: this function does not work properly ... 
     # attaching even after it runs out of items to attach to 
+    try: 
+        with db.engine.begin() as connection:
+            base_items = connection.execute(sqlalchemy.text("""SELECT item_id, item_sku, type, SUM(qty_change) AS qty_change FROM items_ledger
+                                            JOIN items_plan ON items_ledger.item_id = items_plan.id
+                                            WHERE items_plan.mod_id = 0 and items_ledger.customer_id = 0
+                                            GROUP BY item_id, item_sku, type
+                                            HAVING SUM(qty_change) > 0"""))
+            
+            planned_items = connection.execute(sqlalchemy.text("SELECT * FROM items_plan WHERE NOT mod_id = 0"))
 
-    with db.engine.begin() as connection:
-        base_items = connection.execute(sqlalchemy.text("""SELECT item_id, item_sku, type, SUM(qty_change) AS qty_change FROM items_ledger
-                                           JOIN items_plan ON items_ledger.item_id = items_plan.id
-                                           WHERE items_plan.mod_id = 0 and items_ledger.customer_id = 0
-                                           GROUP BY item_id, item_sku, type
-                                           HAVING SUM(qty_change) > 0"""))
+            mod_catalog = connection.execute(sqlalchemy.text("""SELECT mods_plan.id, mods_plan.sku, mods_plan.type, sum(qty_change) AS quantity 
+                                                            FROM mods_ledger JOIN mods_plan ON mods_ledger.mod_id = mods_plan.id 
+                                                            GROUP BY mods_plan.id, mods_plan.sku, mods_plan.type"""))
         
-        planned_items = connection.execute(sqlalchemy.text("SELECT * FROM items_plan WHERE NOT mod_id = 0"))
+            # Rows saved as dictionaries of all items eligible to be modded
+            base_items_dict = [row._asdict() for row in base_items.fetchall()] 
+            # All possible planned items saved as dictionaries
+            planned_items_dict = [row._asdict() for row in planned_items.fetchall()] 
 
-        mod_catalog = connection.execute(sqlalchemy.text("""SELECT mods_plan.id, mods_plan.sku, mods_plan.type, sum(qty_change) AS quantity 
-                                                         FROM mods_ledger JOIN mods_plan ON mods_ledger.mod_id = mods_plan.id 
-                                                         GROUP BY mods_plan.id, mods_plan.sku, mods_plan.type"""))
-       
-        # Rows saved as dictionaries of all items eligible to be modded
-        base_items_dict = [row._asdict() for row in base_items.fetchall()] 
-        # All possible planned items saved as dictionaries
-        planned_items_dict = [row._asdict() for row in planned_items.fetchall()] 
+            final_items = []
+            used_items_dict = []
+            mod_catalog_dict = []
 
-        final_items = []
-        # TODO: these aren't dictionaries though? 
-        used_items_dict = []
-        mod_catalog_dict = []
+            for mod in mod_catalog:
+                quantity = mod.quantity
+                for item in base_items_dict:
+                    # If there are mods that are available and we have weapons to mod, add them!
+                    if quantity != 0: 
+                        used_item = item
+                        # Attach until we run out of weapons or mods.
+                        used_item["qty_change"] = -1*min(abs(item["qty_change"]), abs(mod.quantity)) 
+                        used_item["credit_change"] = 0 
+                        # Dictionary row to add to the ledger
+                        final_items += [{"qty_change": -1*used_item["qty_change"], 
+                                        "item_id": next(i["id"] for i in planned_items_dict if i["sku"] == mod.sku + "_" + item["item_sku"]),
+                                        "item_sku": mod.sku + "_" + item["item_sku"],
+                                        "credit_change": 0,
+                                        "customer_change": 0}]
+                        # Dictionary row to add to the ledger, subtracts base item
+                        used_items_dict += [used_item] 
+                        # The quantity variable keeps track of how many mods are left to use
+                        quantity += used_item["qty_change"] 
 
-        for mod in mod_catalog:
-            quantity = mod.quantity
-            for item in base_items_dict:
-                # If there are mods that are available and we have weapons to mod, add them!
-                if quantity != 0 and item["qty_change"] > 0: 
-                    used_item = item.copy()
-                    # Attach until we run out of weapons or mods.
-                    used_item["qty_change"] = -1*min(abs(item["qty_change"]), abs(mod.quantity)) 
-                    used_item["credit_change"] = 0 
-                    # Dictionary row to add to the ledger
-                    final_items += [{"qty_change": -1*used_item["qty_change"], 
-                                     "item_id": next(i["id"] for i in planned_items_dict if i["sku"] == mod.sku + "_" + item["item_sku"]),
-                                     "item_sku": mod.sku + "_" + item["item_sku"],
-                                     "credit_change": 0,
-                                     "customer_change": 0}]
-                    # Dictionary row to add to the ledger, subtracts base item
-                    used_items_dict += [used_item] 
-                    # The quantity variable keeps track of how many mods are left to use
-                    quantity += used_item["qty_change"] 
-                    item["qty_change"] += used_item["qty_change"]
-
-
-            # only want to add to mod ledger if there is quantity change
-            if quantity - mod.quantity != 0:
-                mod_catalog_dict += [{"qty_change": quantity - mod.quantity, "mod_id": mod.id, "mod_sku": mod.sku, "credit_change": 0}]
-        
-        if used_items_dict and final_items:
-            connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change) 
-                                               VALUES (:qty_change, :item_id, :item_sku, :credit_change)"""), used_items_dict + final_items) # Insert all changes (Base items removed), modded versions added
-            connection.execute(sqlalchemy.text("INSERT INTO mods_ledger (qty_change, mod_id, mod_sku, credit_change) VALUES (:qty_change, :mod_id, :mod_sku, :credit_change)"), mod_catalog_dict)
-            return "OK"
-        else:
-            return "ERROR: mods could not be attached. No items to attach to, or 0 mods available."
+                # only want to add to mod ledger if there is quantity change
+                if quantity - mod.quantity != 0:
+                    mod_catalog_dict += [{"qty_change": quantity - mod.quantity, "mod_id": mod.id, "mod_sku": mod.sku, "credit_change": 0}]
+            
+            if used_items_dict and final_items:
+                connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change) 
+                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change)"""), used_items_dict + final_items) # Insert all changes (Base items removed), modded versions added
+                connection.execute(sqlalchemy.text("INSERT INTO mods_ledger (qty_change, mod_id, mod_sku, credit_change) VALUES (:qty_change, :mod_id, :mod_sku, :credit_change)"), mod_catalog_dict)
+                return "OK"
+            else:
+                return "ERROR: mods could not be attached. No items to attach to, or 0 mods available."
+    except DBAPIError as error:
+        print(f"Error returned: <<<{error}>>>")
 
 @router.post("/purchase/mods")
 def purchase_mods(mod_catalog: list[Mod]):
@@ -107,9 +108,12 @@ def purchase_mods(mod_catalog: list[Mod]):
     '''
 
     # NOTE: this will return None if there are no entries in either of the ledgers ... 
-    with db.engine.begin() as connection:
-        credits = connection.execute(sqlalchemy.text(credits_sql)).scalar()
-        num_each_type = connection.execute(sqlalchemy.text(mods_sql)).all()
+    try:
+        with db.engine.begin() as connection:
+            credits = connection.execute(sqlalchemy.text(credits_sql)).scalar()
+            num_each_type = connection.execute(sqlalchemy.text(mods_sql)).all()
+    except DBAPIError as error:
+        print(f"Error returned: <<<{error}>>>")
 
     # storing the num of each type of item 
     # key: type
@@ -168,10 +172,13 @@ def purchase_mods(mod_catalog: list[Mod]):
     '''
 
     # once the order has been created, run through and make the appropriate inserts
-    with db.engine.begin() as connection:
-        for line_item in order:
-            print(line_item)
-            id = connection.execute(sqlalchemy.text(id_sql), [{"sku":line_item['sku']}]).scalar()
-            connection.execute(sqlalchemy.text(pur_sql), [{"qty":line_item['qty'], "mod_id":id, "mod_sku":line_item['sku'], "credit_change": -line_item['price'] * line_item['qty']}])
-
+    try:
+        with db.engine.begin() as connection:
+            for line_item in order:
+                print(line_item)
+                id = connection.execute(sqlalchemy.text(id_sql), [{"sku":line_item['sku']}]).scalar()
+                connection.execute(sqlalchemy.text(pur_sql), [{"qty":line_item['qty'], "mod_id":id, "mod_sku":line_item['sku'], "credit_change": -line_item['price'] * line_item['qty']}])
+    except DBAPIError as error:
+        print(f"Error returned: <<<{error}>>>")
+        
     return order
