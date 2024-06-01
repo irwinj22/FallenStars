@@ -115,9 +115,9 @@ def purchase_mods(mod_catalog: list[Mod]):
     '''
 
     # once the order has been created, run through and make the appropriate inserts
-    for line_item in order:
-        print(line_item)
-        with db.engine.begin() as connection:
+    with db.engine.begin() as connection:
+        for line_item in order:
+            print(line_item)
             id = connection.execute(sqlalchemy.text(id_sql), [{"sku":line_item['sku']}]).scalar()
             connection.execute(sqlalchemy.text(pur_sql), [{"qty":line_item['qty'], "mod_id":id, "mod_sku":line_item['sku'], "credit_change": -line_item['price'] * line_item['qty']}])
 

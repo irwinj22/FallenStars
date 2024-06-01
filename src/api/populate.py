@@ -13,8 +13,11 @@ router = APIRouter(
 router = APIRouter()
 @router.post("/populate/", tags=["populate"])
 def populate():
+    '''
+    Initital data needed to run properly.
+    '''
+
     with db.engine.begin() as connection:
-        # check if customer record exists, get id
         connection.execute(sqlalchemy.text('''
         INSERT INTO customers VALUES (0, now(), 'Fallen Stars', 'other');
 

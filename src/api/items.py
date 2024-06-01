@@ -35,6 +35,7 @@ def purchase_items(item_catalog: list[Item]):
            COALESCE((SELECT SUM(mods_ledger.credit_change) FROM mods_ledger), 0) AS credits
     '''
 
+    # NOTE: extra connection is necessary, as we can't buy items without knowing how much money we have
     with db.engine.begin() as connection:
         credits = connection.execute(sqlalchemy.text(credits_sql)).scalar()
 
@@ -67,9 +68,9 @@ def purchase_items(item_catalog: list[Item]):
     '''
 
     # once the order has been created, run through and make the appropriate inserts
-    for line_item in order:
-        print(line_item)
-        with db.engine.begin() as connection:
+    with db.engine.begin() as connection:
+        for line_item in order:
+            print(line_item)
             id = connection.execute(sqlalchemy.text(id_sql), [{"sku":line_item['sku']}]).scalar()
             connection.execute(sqlalchemy.text(pur_sql), [{"qty":line_item['qty'], "item_id":id, "item_sku":line_item['sku'], "credit_change": -line_item['price'] * line_item['qty']}])
 

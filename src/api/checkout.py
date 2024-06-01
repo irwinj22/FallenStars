@@ -23,6 +23,10 @@ class CheckoutItem(BaseModel):
 router = APIRouter()
 @router.post("/checkout/", tags=["checkout"])
 def checkout(customer:Customer, checkout_items: list[CheckoutItem]):
+    '''
+    Customer purchases item(s).
+    '''
+    
     # NOTE: have to create customer first, since foreign key reference in items_ledger
     with db.engine.begin() as connection:
         # check if customer record exists, get id
@@ -54,9 +58,9 @@ def checkout(customer:Customer, checkout_items: list[CheckoutItem]):
     INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change, customer_id) VALUES (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)
     '''
 
-    for item in checkout_items:
-        print(item)
-        with db.engine.begin() as connection:
+    with db.engine.begin() as connection:
+        for item in checkout_items:
+            print(item)
             # get the item_id, total_price for insertion
             info = connection.execute(sqlalchemy.text(sql), [{"item_sku":item.item_sku}]).fetchone()
             # make insertion into item_ledger

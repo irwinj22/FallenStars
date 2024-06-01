@@ -29,8 +29,11 @@ def cosine_distance(v1, v2):
     norm_v2 = np.linalg.norm(v2)
     return 1-(dot_product / (norm_v1 * norm_v2))
 
-@router.get("/recommend")
+@router.post("/recommend")
 def recommend(customer:Customer, budget: int, enemy_element: str):
+    '''
+    Recommend purchases to customers. 
+    '''
     with db.engine.begin() as connection:
         # check if customer record exists, get id
         sql = '''
@@ -49,7 +52,7 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
             '''
             id = connection.execute(sqlalchemy.text(sql), [{"name":customer.name, "role":customer.role}]).scalar()
 
-     # The roles in our world fall into three categories: Attackers, Defenders, and Specialists
+    # The roles in our world fall into three categories: Attackers, Defenders, and Specialists
     # Attackers prioritize weapons, which will be represented by 1
     # Defenders prioritize armor, whcih will be represented by 2
     # Specialists prioritize Misc. items, which will be represented by 3
@@ -140,7 +143,6 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
                                                             HAVING SUM(qty_change) > 0"""), [{"x":"armor"}])
         min_dist = 2
         for row in a_item_vecs:
-            # NOTE: this line is throwing an erro .. comparison between None and int
             if cosine_distance(row.item_vec, a_given_vec) < min_dist:
                 min_dist = cosine_distance(row.item_vec, a_given_vec)
                 a_rec_vec = row.item_vec
@@ -178,6 +180,10 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
 
 @router.post("/swap")
 def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
+    '''
+    Allow customer to swap their items for different ones. 
+    '''
+
     # Initializing the list of items the customer will be "buying"
     checkout_list = []
 
