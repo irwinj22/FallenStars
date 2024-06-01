@@ -166,11 +166,11 @@ The customer trades in their old items for the recommended ones
 ```json
 [
     {
-        "weapon": "boolean",
-        "armor": "boolean",
-        "other": "boolean",
-        "name": "string",
-        "role": "string"
+        "weapon": "boolean", /* T or F */
+        "armor": "boolean", /* T or F */
+        "other": "boolean", /* T or F */
+        "name": "string", /* Matching regex ^[a-zA-Z0-9_]{1,20}$ */
+        "role": "string" /* One of Possible Roles listed at bottom */
     }
 ]
 ```

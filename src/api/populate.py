@@ -21,10 +21,10 @@ def populate():
         connection.execute(sqlalchemy.text('''
         INSERT INTO customers VALUES (0, now(), 'Fallen Stars', 'EXPERT');
 
-        INSERT INTO mods_plan VALUES (0, 'BASIC', 0, 'basic');
-        INSERT INTO mods_plan VALUES (1, 'FIRE', 0, 'fire');
-        INSERT INTO mods_plan VALUES (2, 'EARTH', 0, 'earth');
-        INSERT INTO mods_plan VALUES (3, 'WATER', 0, 'water');
+        INSERT INTO mods_plan VALUES (0, 'BASIC', 'basic');
+        INSERT INTO mods_plan VALUES (1, 'FIRE', 'fire');
+        INSERT INTO mods_plan VALUES (2, 'EARTH', 'earth');
+        INSERT INTO mods_plan VALUES (3, 'WATER', 'water');
 
         INSERT INTO items_plan VALUES (1, 'weapon', 30, 0, 'LONGSWORD', ARRAY[30, 0, 1]);
         INSERT INTO items_plan VALUES (2, 'weapon', 50, 1, 'FIRE_LONGSWORD', ARRAY[50, 1, 1]);

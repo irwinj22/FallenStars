@@ -207,7 +207,8 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
 
     with db.engine.begin() as connection:
         # Accesses the sku and corresponding customer id for the items that the customer has currently in their inventory
-        results = connection.execute(sqlalchemy.text("""SELECT item_sku, customer_id FROM items_ledger
+        results = connection.execute(sqlalchemy.text("""SELECT item_sku, customer_id 
+                                                FROM items_ledger
                                                 JOIN items_plan ON items_plan.sku = items_ledger.item_sku
                                                 WHERE customer_id = (SELECT id FROM customers
                                                 WHERE name = :x)
@@ -220,7 +221,7 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
         if not rec_skus: 
                 raise HTTPException(status_code=404, detail=f"No previous recommendations found for {customer.name.title()}")
         # If the customer wants to swap their weapon...
-        if weapon and rec_skus[0] != "NA":
+        if weapon and rec_skus[0][0] != "NA":
             if not results[2]:
                 raise HTTPException(status_code=404, detail=f"No weapons found in the inventory for customer {customer.name.title()}")
             # Accesses the id and price from items_plan of the weapon that the customer has in their inventory
@@ -235,7 +236,7 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
             checkout_list.append(CheckoutItem(item_sku=rec_skus[0], qty=1))
 
         # If the customer wants to swap their armor...
-        if armor and rec_skus[1] != "NA":
+        if armor and rec_skus[0][1] != "NA":
             if not results[0]:
                 raise HTTPException(status_code=404, detail=f"No armor found in the inventory for customer {customer.name.title()}")
             # Accesses the id and price from items_plan of the armor that the customer has in their inventory
@@ -250,7 +251,7 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
             checkout_list.append(CheckoutItem(item_sku=rec_skus[1], qty=1))
 
         # If the customer wants to swap their "other item"...
-        if other and rec_skus[2] != "NA":
+        if other and rec_skus[0][2] != "NA":
             if not results[1]:
                 raise HTTPException(status_code=404, detail=f"No misc. items found in the inventory for customer {customer.name.title()}")
             # Accesses the id and price from items_plan of the armor that the customer has in their inventory

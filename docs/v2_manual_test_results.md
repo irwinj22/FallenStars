@@ -84,7 +84,7 @@ Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a loo
 Nicholas the Dawg wants to buy a new EARTH PISTOL to show off to his friends. So, he asks to see the purchase catalog of our shop. He sees that we are selling 1 PISTOlL, 2 FIRE_PISTOL, and 2 EARTH_PISTOL. Nicholas sees that we are offering what he wants, so he purchases the EARTH_PISTOL for 50 credits. 
 
 1. call GET/catalog to see what is available. 
-2. call GET/checkout to purchase the EARTH_PISTOL.
+2. call POST/checkout to purchase the EARTH_PISTOL.
 
 # Testing Results
 
@@ -123,7 +123,7 @@ Nicholas the Dawg wants to buy a new EARTH PISTOL to show off to his friends. So
   -d '{
   "customer": {
     "name": "Nicholas the Dawg",
-    "role": "Dawg"
+    "role": "WARRIOR"
   },
   "checkout_items": [
     {
@@ -136,5 +136,26 @@ Nicholas the Dawg wants to buy a new EARTH PISTOL to show off to his friends. So
 “OK”
 
 # Example Workflow 3
-TODO!
-Should have something to do with recommendations, once that gets done … 
+Later, Nicholas the Dawg enters a new battle against an EARTH enemey and wants a recommendation as to what weapon he should buy. So, he get a recommendation of a FIRE_PISTOL and then swaps his EARTH_PISTOL for a FIRE_PISTOL. 
+
+1. call POST/recommendations/recommend to get rec. 
+2. call POST/recommendations/swap to swap. 
+
+1. curl -X 'POST' \
+  'http://127.0.0.1:8000/recommendations/recommend?budget=90&enemy_element=EARTH' \
+  -H 'accept: application/json' \
+  -H 'access_token: armory' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Nicholas the Dawg",
+  "role": "WARRIOR"
+}'
+
+{
+  "Rec. Weapon": "FIRE_PISTOL",
+  "Rec. Armor": "NA",
+  "Rec. Other": "NA",
+  "Total Cost": 45
+}
+2. TODO
+

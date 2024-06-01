@@ -69,3 +69,4 @@ def checkout(customer:Customer, checkout_items: list[CheckoutItem]):
 
     return "OK"
 
+    # TODO: return what the customer is purchasing ... 
