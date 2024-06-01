@@ -217,18 +217,23 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
                                                 GROUP BY item_sku, customer_id, items_plan.type
                                                 HAVING SUM(qty_change) < 0
                                                 ORDER BY items_plan.type ASC"""), [{"x":customer.name.title(), "y":"weapon"}]).fetchall()
+        
         # Access the skus of the items we recommended to the user
         rec_skus = connection.execute(sqlalchemy.text("""SELECT recent_w_rec, recent_a_rec, recent_o_rec FROM customers 
                                                WHERE name = :x"""), [{"x":customer.name.title()}]).fetchone()
+        
         if not rec_skus: 
                 raise HTTPException(status_code=404, detail=f"No previous recommendations found for {customer.name.title()}")
+        
         # If the customer wants to swap their weapon...
         if weapon and rec_skus[0][0] != "NA":
-            if not results[2]:
-                raise HTTPException(status_code=404, detail=f"No weapons found in the inventory for customer {customer.name.title()}")
+            # if not results[2]:
+                # raise HTTPException(status_code=404, detail=f"No weapons found in the inventory for customer {customer.name.title()}")
+            
             # Accesses the id and price from items_plan of the weapon that the customer has in their inventory
             details = connection.execute(sqlalchemy.text("""SELECT id, price FROM items_plan
                                                          WHERE sku = :x"""), [{"x":results[2][0]}]).fetchone()
+            
             # Completes the return of the customer's weapon to Fallen Stars Armory
             connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change, customer_id) 
                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""), 
@@ -239,11 +244,13 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
 
         # If the customer wants to swap their armor...
         if armor and rec_skus[0][1] != "NA":
-            if not results[0]:
-                raise HTTPException(status_code=404, detail=f"No armor found in the inventory for customer {customer.name.title()}")
+            # if not results[0]:
+                # raise HTTPException(status_code=404, detail=f"No armor found in the inventory for customer {customer.name.title()}")
+            
             # Accesses the id and price from items_plan of the armor that the customer has in their inventory
             details = connection.execute(sqlalchemy.text("""SELECT id, price FROM items_plan
                                                          WHERE sku = :x"""), [{"x":results[0][0]}]).fetchone()
+            
             # Completes the return of the customer's armor to Fallen Stars Armory
             connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change, customer_id) 
                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""), 
@@ -254,11 +261,13 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
 
         # If the customer wants to swap their "other item"...
         if other and rec_skus[0][2] != "NA":
-            if not results[1]:
-                raise HTTPException(status_code=404, detail=f"No misc. items found in the inventory for customer {customer.name.title()}")
+            # if not results[1]:
+                # raise HTTPException(status_code=404, detail=f"No misc. items found in the inventory for customer {customer.name.title()}")
+            
             # Accesses the id and price from items_plan of the armor that the customer has in their inventory
             details = connection.execute(sqlalchemy.text("""SELECT id, price FROM items_plan
                                                          WHERE sku = :x"""), [{"x":results[1][0]}]).fetchone()
+            
             # Completes the return of the customer's armor to Fallen Stars Armory
             connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change, customer_id) 
                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""), 
