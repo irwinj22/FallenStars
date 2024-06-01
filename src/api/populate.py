@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+import numpy as np
+from faker import Faker
 
 router = APIRouter(
     prefix="/checkout",
@@ -58,5 +60,10 @@ def populate():
 
         INSERT INTO mods_ledger VALUES (1, now(), 0, 0, 'NONE', 2000);
         '''))
+
+    return "OK"
+
+@router.post("/million/", tags=["populate"])
+def million():
 
     return "OK"

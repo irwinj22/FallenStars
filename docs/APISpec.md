@@ -224,5 +224,5 @@ Possible Roles:
 'SHIFTER'   
 'BUILDER'   
 'EXPERT'   
-'MAGGE'   
+'MAGE'   
 'SCOUT'   
