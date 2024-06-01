@@ -98,11 +98,14 @@ def million():
         mods_array = np.random.randint(len(possible_mods), size=dupe_num)
         for i in range(dupe_num):
             print(i)
+            c_check = 0
+            if int(q_i[i]) < 0:
+                c_check = int(c_id_array[i])
             connection.execute(sqlalchemy.text("""insert into items_ledger (qty_change, item_id, item_sku, credit_change, customer_id) values
                                                (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""),
                                                {"qty_change": int(q_i[i]), "item_id": int(possible_items[items_array[i]][0]), 
                                                 "item_sku": possible_items[items_array[i]][1], "credit_change": int(max(0,possible_items[items_array[i]][2]*q_i[i])),
-                                                "customer_id": int(c_id_array[i])})
+                                                "customer_id": c_check})
             connection.execute(sqlalchemy.text("""insert into mods_ledger (qty_change, mod_id, mod_sku, credit_change) values
                                                (:qty_change, :mod_id, :mod_sku, :credit_change)"""),
                                                {"qty_change": int(q_m[i]), "mod_id": int(possible_mods[mods_array[i]][0]), 
