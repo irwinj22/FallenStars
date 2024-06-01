@@ -5,7 +5,7 @@ import json
 import logging
 import sys
 from starlette.middleware.cors import CORSMiddleware
-from src.api import items, catalog, mods, checkout, recommendations
+from src.api import items, catalog, mods, checkout, recommendations, populate
 
 description = """
 Fallen Stars -- for all your armory needs!
@@ -31,6 +31,7 @@ app.include_router(catalog.router)
 app.include_router(mods.router)
 app.include_router(checkout.router)
 app.include_router(recommendations.router)
+app.include_router(populate.router)
 
 @app.exception_handler(exceptions.RequestValidationError)
 @app.exception_handler(ValidationError)

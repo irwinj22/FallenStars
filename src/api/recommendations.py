@@ -31,6 +31,9 @@ def cosine_distance(v1, v2):
 
 @router.post("/recommend")
 def recommend(customer:Customer, budget: int, enemy_element: str):
+    '''
+    Recommend purchases to customers. 
+    '''
     with db.engine.begin() as connection:
         # check if customer record exists, get id
         sql = '''
@@ -53,7 +56,7 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
                 raise HTTPException(status_code=400, detail="Invalid name...ask yo mama for a new one")
 
 
-     # The roles in our world fall into three categories: Attackers, Defenders, and Specialists
+    # The roles in our world fall into three categories: Attackers, Defenders, and Specialists
     # Attackers prioritize weapons, which will be represented by 1
     # Defenders prioritize armor, whcih will be represented by 2
     # Specialists prioritize Misc. items, which will be represented by 3
@@ -145,6 +148,7 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
                                                             WHERE items_plan.type = :x
                                                             GROUP BY item_vec
                                                             HAVING SUM(qty_change) > 0"""), [{"x":"armor"}])
+<<<<<<< HEAD
         if a_item_vecs is not None:
             min_dist = 2
             for row in a_item_vecs:
@@ -158,6 +162,17 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
             total_price += info2[1]
         else:
             rec_armor_sku = "NA"
+=======
+        min_dist = 2
+        for row in a_item_vecs:
+            if cosine_distance(row.item_vec, a_given_vec) < min_dist:
+                min_dist = cosine_distance(row.item_vec, a_given_vec)
+                a_rec_vec = row.item_vec
+        info2 = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
+                                                      WHERE item_vec = :x"""), [{"x":a_rec_vec}]).fetchone()
+        rec_armor_sku = info2[0]
+        total_price += info2[1]
+>>>>>>> e26cc2e9bc3812c72841355ce2719ed96ed7f6ca
         
         # Lastly we repeat that process but for misc. items
         m_item_vecs = connection.execute(sqlalchemy.text("""SELECT item_vec FROM items_plan
@@ -191,6 +206,10 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
 
 @router.post("/swap")
 def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
+    '''
+    Allow customer to swap their items for different ones. 
+    '''
+
     # Initializing the list of items the customer will be "buying"
     checkout_list = []
 

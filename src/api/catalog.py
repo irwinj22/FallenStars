@@ -13,6 +13,10 @@ router = APIRouter(
 router = APIRouter()
 @router.get("/catalog/", tags=["catalog"])
 def get_catalog():
+    '''
+    Offer all possible items to customer.
+    '''
+
     json = []
 
     sql = '''
@@ -26,16 +30,16 @@ def get_catalog():
     HAVING SUM(items_ledger.qty_change) > 0
     '''
   
+    # get all items in stock
     with db.engine.begin() as connection:
         items_in_stock = connection.execute(sqlalchemy.text(sql)).fetchall() 
 
+    # offer each item in catalog 
     for line_item in items_in_stock:
         json.append(
             {
-                # "item_id" : line_item.item_id,
                 "sku" : line_item.item_sku, 
                 "type" : line_item.type,
-                # "mod_id": line_item.mod_id,
                 "mod" : line_item.mod_sku,
                 "price" : line_item.price,
                 "qty" : line_item.qty
