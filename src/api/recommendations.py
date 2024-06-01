@@ -138,8 +138,10 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
                     w_rec_vec = row.item_vec
             info1 = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
                                                         WHERE item_vec = :x"""), [{"x":w_rec_vec}]).fetchone()
-            rec_weapon_sku = info1[0]
-            total_price += info1[1]
+            # rec_weapon_sku = info1[0]
+            # total_price += info1[1]
+            rec_weapon_sku = info1.sku
+            total_price += info1.price
         else:
             rec_weapon_sku = "NA"
         
@@ -160,8 +162,8 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
                     a_rec_vec = row.item_vec
             info2 = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
                                                         WHERE item_vec = :x"""), [{"x":a_rec_vec}]).fetchone()
-            rec_armor_sku = info2[0]
-            total_price += info2[1]
+            rec_armor_sku = info2.sku
+            total_price += info2.price
         else:
             rec_armor_sku = "NA"
         
@@ -180,8 +182,8 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
                     m_rec_vec = row.item_vec
             info3 = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
                                                         WHERE item_vec = :x"""), [{"x":m_rec_vec}]).fetchone()
-            rec_other_sku = info3[0]
-            total_price += info3[1]
+            rec_other_sku = info3.sku
+            total_price += info3.price
         else:
             rec_other_sku = "NA"
 

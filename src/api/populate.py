@@ -4,7 +4,7 @@ from src.api import auth
 import sqlalchemy
 from src import database as db
 import numpy as np
-from faker import Faker
+# from faker import Faker
 
 router = APIRouter(
     prefix="/checkout",
