@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from typing import Literal
 
 router = APIRouter(
     prefix="/items",
@@ -11,10 +12,34 @@ router = APIRouter(
 )
 
 class Item(BaseModel):
-    sku: str
-    type: str
-    price: int
-    quantity: int
+    sku: Literal[
+        'LONGSWORD'
+        'FIRE_LONGSWORD'
+        'EARTH_LONGSWORD'
+        'WATER_LONGSWORD'
+        'PISTOL'
+        'FIRE_PISTOL'
+        'EARTH_PISTOL'
+        'WATER_PISTOL'
+        'SHIELD'
+        'FIRE_SHIELD'
+        'EARTH_SHIELD'
+        'WATER_SHIELD'
+        'HELMET'
+        'FIRE_HELMET'
+        'EARTH_HELMET'
+        'WATER_HELMET'
+        'STAFF'
+        'FIRE_STAFF'
+        'EARTH_STAFF'
+        'WATER_STAFF'
+        'CHAINLINK'
+        'FIRE_CHAINLINK'
+        'EARTH_CHAINLINK'
+        'WATER_CHAINLINK']
+    type: Literal["weapon", "armor", "other"]
+    price: int = Field(gt=0, lt=200)
+    quantity: int = Field(gt=0, lt=20)
 
 @router.post("/purchase/items")
 def purchase_items(item_catalog: list[Item]):
