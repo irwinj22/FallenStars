@@ -5,7 +5,7 @@ import sqlalchemy
 from src import database as db
 import numpy as np
 from sqlalchemy.exc import DBAPIError
-# from faker import Faker
+from faker import Faker
 
 router = APIRouter(
     prefix="/checkout",
