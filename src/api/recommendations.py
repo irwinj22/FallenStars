@@ -148,7 +148,6 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
                                                             WHERE items_plan.type = :x
                                                             GROUP BY item_vec
                                                             HAVING SUM(qty_change) > 0"""), [{"x":"armor"}])
-<<<<<<< HEAD
         if a_item_vecs is not None:
             min_dist = 2
             for row in a_item_vecs:
@@ -162,17 +161,6 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
             total_price += info2[1]
         else:
             rec_armor_sku = "NA"
-=======
-        min_dist = 2
-        for row in a_item_vecs:
-            if cosine_distance(row.item_vec, a_given_vec) < min_dist:
-                min_dist = cosine_distance(row.item_vec, a_given_vec)
-                a_rec_vec = row.item_vec
-        info2 = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
-                                                      WHERE item_vec = :x"""), [{"x":a_rec_vec}]).fetchone()
-        rec_armor_sku = info2[0]
-        total_price += info2[1]
->>>>>>> e26cc2e9bc3812c72841355ce2719ed96ed7f6ca
         
         # Lastly we repeat that process but for misc. items
         m_item_vecs = connection.execute(sqlalchemy.text("""SELECT item_vec FROM items_plan
@@ -194,7 +182,7 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
             rec_other_sku = "NA"
 
         connection.execute(sqlalchemy.text("""UPDATE customers SET recent_w_rec = :x, recent_a_rec = :y, recent_o_rec = :z
-                                           WHERE name = :w"""), [{"x":rec_weapon_sku, "y": rec_armor_sku, "z":rec_other_sku, "w": customer.name}])
+                                           WHERE name = :w"""), [{"x":rec_weapon_sku, "y": rec_armor_sku, "z":rec_other_sku, "w": customer.name.title()}])
 
 
         
@@ -215,24 +203,22 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
 
     with db.engine.begin() as connection:
         # Accesses the sku and corresponding customer id for the items that the customer has currently in their inventory
-        try:
-            results = connection.execute(sqlalchemy.text("""SELECT item_sku, customer_id FROM items_ledger
+        results = connection.execute(sqlalchemy.text("""SELECT item_sku, customer_id FROM items_ledger
                                                 JOIN items_plan ON items_plan.sku = items_ledger.item_sku
                                                 WHERE customer_id = (SELECT id FROM customers
                                                 WHERE name = :x)
                                                 GROUP BY item_sku, customer_id, items_plan.type
                                                 HAVING SUM(qty_change) < 0
-                                                ORDER BY items_plan.type ASC"""), [{"x":customer.name, "y":"weapon"}]).fetchall()
-        except sqlalchemy.exc.SQLAlchemyError as e: 
-                raise HTTPException(status_code=400, detail=f"No items found in the inventory of {customer.name}")
+                                                ORDER BY items_plan.type ASC"""), [{"x":customer.name.title(), "y":"weapon"}]).fetchall()
         # Access the skus of the items we recommended to the user
-        try:
-            rec_skus = connection.execute(sqlalchemy.text("""SELECT recent_w_rec, recent_a_rec, recent_o_rec FROM customers 
-                                               WHERE name = :x"""), [{"x":customer.name}]).fetchone()
-        except sqlalchemy.exc.SQLAlchemyError as e: 
-                raise HTTPException(status_code=404, detail=f"No previous recommendations found for {customer.name}")
+        rec_skus = connection.execute(sqlalchemy.text("""SELECT recent_w_rec, recent_a_rec, recent_o_rec FROM customers 
+                                               WHERE name = :x"""), [{"x":customer.name.title()}]).fetchone()
+        if not rec_skus: 
+                raise HTTPException(status_code=404, detail=f"No previous recommendations found for {customer.name.title()}")
         # If the customer wants to swap their weapon...
-        if weapon and results[2] is not None and rec_skus[0] != "NA":
+        if weapon and rec_skus[0] != "NA":
+            if not results[2]:
+                raise HTTPException(status_code=404, detail=f"No weapons found in the inventory for customer {customer.name.title()}")
             # Accesses the id and price from items_plan of the weapon that the customer has in their inventory
             details = connection.execute(sqlalchemy.text("""SELECT id, price FROM items_plan
                                                          WHERE sku = :x"""), [{"x":results[2][0]}]).fetchone()
@@ -245,7 +231,9 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
             checkout_list.append(CheckoutItem(item_sku=rec_skus[0], qty=1))
 
         # If the customer wants to swap their armor...
-        if armor and results[0] is not None and rec_skus[1] != "NA":
+        if armor and rec_skus[1] != "NA":
+            if not results[0]:
+                raise HTTPException(status_code=404, detail=f"No armor found in the inventory for customer {customer.name.title()}")
             # Accesses the id and price from items_plan of the armor that the customer has in their inventory
             details = connection.execute(sqlalchemy.text("""SELECT id, price FROM items_plan
                                                          WHERE sku = :x"""), [{"x":results[0][0]}]).fetchone()
@@ -258,7 +246,9 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
             checkout_list.append(CheckoutItem(item_sku=rec_skus[1], qty=1))
 
         # If the customer wants to swap their "other item"...
-        if other and results[1] is not None and rec_skus[2] != "NA":
+        if other and rec_skus[2] != "NA":
+            if not results[1]:
+                raise HTTPException(status_code=404, detail=f"No misc. items found in the inventory for customer {customer.name.title()}")
             # Accesses the id and price from items_plan of the armor that the customer has in their inventory
             details = connection.execute(sqlalchemy.text("""SELECT id, price FROM items_plan
                                                          WHERE sku = :x"""), [{"x":results[1][0]}]).fetchone()
@@ -271,6 +261,9 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
             checkout_list.append(CheckoutItem(item_sku=rec_skus[2], qty=1))
 
     # Performs a checkout on the new items
-    checkout.checkout(customer, checkout_list)
+    try:
+        checkout.checkout(customer, checkout_list)
+    except:
+        raise HTTPException(status_code=404, detail="Checkout failed, please contact Fallen Stars")
     
     return "OK"
