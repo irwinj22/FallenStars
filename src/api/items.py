@@ -65,25 +65,27 @@ def purchase_items(item_catalog: list[Item]):
   
     # iterate through each item being offered by Nurane, buy if we have fewer than 6
     for item in item_catalog: 
-        # number we would want to buy, without restrains of price, num offered by Nurane
-        num_wanted = min(6, abs(6 - type_dict[item.type]))
-        num_can_afford = credits // item.price
-        # now, introduce restraints
-        num_possible = min(item.quantity, min(num_can_afford, num_wanted))
-        # if, given restraints, we can buy something --> add it to order
-        if num_possible > 0: 
-            order.append(
-                {
-                    "sku": item.sku,
-                    "type" : item.type, 
-                    "price" : item.price,
-                    "qty" : num_possible             
-                }
-            )
-        # update credits
-        credits -= num_possible * item.price
-        # update num we have in dictionary (in case another item of same type offered later)
-        type_dict[item.type] += num_possible
+        # if we have fewer than 6
+        if type_dict[item.type] < 6:
+            # number we would want to buy, without restrains of price, num offered by Nurane
+            num_wanted = min(6, 6 - type_dict[item.type])
+            num_can_afford = credits // item.price
+            # now, introduce restraints
+            num_possible = min(item.quantity, min(num_can_afford, num_wanted))
+            # if, given restraints, we can buy something --> add it to order
+            if num_possible > 0: 
+                order.append(
+                    {
+                        "sku": item.sku,
+                        "type" : item.type, 
+                        "price" : item.price,
+                        "qty" : num_possible             
+                    }
+                )
+            # update credits
+            credits -= num_possible * item.price
+            # update num we have in dictionary (in case another item of same type offered later)
+            type_dict[item.type] += num_possible
 
     # once we iterate through catalog, want to make insertion into ledger
  

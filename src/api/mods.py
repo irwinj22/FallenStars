@@ -71,8 +71,8 @@ def purchase_mods(mod_catalog: list[Mod]):
     '''
 
     '''
-    Current logic: 
-    buy up to three mods if FIRE or EARTH (could be 6 total)
+    NEW logic: buy up to four of each kind of mod, depending on what we have in inventory 
+    (as in, what we haven't attached ...)
     '''
 
     order = []
@@ -82,25 +82,60 @@ def purchase_mods(mod_catalog: list[Mod]):
            COALESCE((SELECT SUM(mods_ledger.credit_change) FROM mods_ledger), 0) AS credits
     '''
 
+    mods_sql = '''
+    SELECT mod_sku, SUM(qty_change)
+    FROM mods_ledger
+    GROUP BY mod_sku
+    '''
+
     # NOTE: this will return None if there are no entries in either of the ledgers ... 
     with db.engine.begin() as connection:
         credits = connection.execute(sqlalchemy.text(credits_sql)).scalar()
+        num_each_type = connection.execute(sqlalchemy.text(mods_sql)).all()
+
+    # storing the num of each type of item 
+    # key: type
+    # value: num we have
+    type_dict = {}
+
+    # convert query return from list of tuples to dict
+    for value in num_each_type:
+        # don't want to include 
+        if value[0] != "NONE":
+            type_dict[value[0]] = value[1]
+
+    # fill in, just in case haven't bought item of certain type
+    if "FIRE" not in type_dict:
+        type_dict["FIRE"] = 0
+    if "EARTH" not in type_dict:
+        type_dict["EARTH"] = 0
+    if "WATER" not in type_dict:
+        type_dict["WATER"] = 0
 
     # iterate through each item being offered by Nurane, buy according to logic specified above
     for mod in mod_catalog: 
-        if mod.sku == "FIRE" or mod.sku == "EARTH":
-            num_can_afford = credits // mod.price 
-            num_possibile = min(2, min(num_can_afford, mod.quantity))
-            # if possible for us to buy more than one, then add to order
-            if num_possibile > 0:
+        # if we have fewer than 4
+        if type_dict[mod.sku] < 4:
+            # number we would want to buy, without restrains of price, num offered by Nurane
+            # maybe we could just do a check or something, i am not sure what the best to do this is tbh
+            num_wanted = min(4, 4 - type_dict[mod.sku])
+            num_can_afford = credits // mod.price
+            # now, introduce restraints
+            num_possible = min(mod.quantity, min(num_can_afford, num_wanted))
+            # if, given restraints, we can buy something --> add it to order
+            if num_possible > 0: 
                 order.append(
                     {
                         "sku": mod.sku,
                         "type" : mod.type, 
                         "price" : mod.price,
-                        "qty" : num_possibile
+                        "qty" : num_possible             
                     }
                 )
+            # update credits
+            credits -= num_possible * mod.price
+            # update num we have in dictionary
+            type_dict[mod.sku] += num_possible
 
     # to get id from mods_plan    
     id_sql = '''
