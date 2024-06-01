@@ -39,12 +39,11 @@ create table
     item_id integer null,
     item_sku text null,
     credit_change integer null,
-    customer_id integer null,
+    customer_id integer null default 0,
     constraint items_ledger_pkey primary key (id),
     constraint items_ledger_customer_id_fkey foreign key (customer_id) references customers (id),
     constraint public_items_ledger_item_id_fkey foreign key (item_id) references items_plan (id)
   ) tablespace pg_default;
-
 
 create table
   public.mods_ledger (

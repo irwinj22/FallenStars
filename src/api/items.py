@@ -23,9 +23,8 @@ def purchase_items(item_catalog: list[Item]):
     '''
 
     '''
-    Current logic: 
-    buy 5 PISTOL, if possible (could be restrained by credits or num offered)
-    --> if can't buy 5, just buy as many as possible 
+    NEW LOGIC: 
+    Buy so that we have 6 items of each type (weapon, armor, other)
     '''
 
     order = []
@@ -35,26 +34,61 @@ def purchase_items(item_catalog: list[Item]):
            COALESCE((SELECT SUM(mods_ledger.credit_change) FROM mods_ledger), 0) AS credits
     '''
 
+    items_sql = '''
+    SELECT items_plan.type, SUM(qty_change)
+    FROM items_ledger
+    JOIN items_plan ON items_plan.id = items_ledger.item_id
+    GROUP BY items_plan.type
+    '''
+
     # NOTE: extra connection is necessary, as we can't buy items without knowing how much money we have
     with db.engine.begin() as connection:
         credits = connection.execute(sqlalchemy.text(credits_sql)).scalar()
+        num_each_type = connection.execute(sqlalchemy.text(items_sql)).all()
 
-    # iterate through each item being offered by Nurane, buy according to logic specified above
+    # storing the num of each type of item 
+    # key: type
+    # value: num we have
+    type_dict = {}
+
+    # convert query return from list of tuples to dict
+    for value in num_each_type:
+        type_dict[value[0]] = value[1]
+
+    # fill in, just in case haven't bought item of certain type
+    if "weapon" not in type_dict:
+        type_dict["weapon"] = 0
+    if "armor" not in type_dict:
+        type_dict["armor"] = 0
+    if "other" not in type_dict:
+        type_dict["other"] = 0
+  
+    # iterate through each item being offered by Nurane, buy if we have fewer than 6
     for item in item_catalog: 
-        if item.sku == "PISTOL":
-            num_can_afford = credits // item.price 
-            num_possibile = min(5, min(num_can_afford, item.quantity))
-            # if possible for us to buy more than one, then add to order
-            if num_possibile > 0:
+        # if we have fewer than 6
+        if type_dict[item.type] < 6:
+            # number we would want to buy, without restrains of price, num offered by Nurane
+            num_wanted = min(6, 6 - type_dict[item.type])
+            num_can_afford = credits // item.price
+            # now, introduce restraints
+            num_possible = min(item.quantity, min(num_can_afford, num_wanted))
+            # if, given restraints, we can buy something --> add it to order
+            if num_possible > 0: 
                 order.append(
                     {
                         "sku": item.sku,
                         "type" : item.type, 
                         "price" : item.price,
-                        "qty" : num_possibile
+                        "qty" : num_possible             
                     }
                 )
+            # update credits
+            credits -= num_possible * item.price
+            # update num we have in dictionary (in case another item of same type offered later)
+            type_dict[item.type] += num_possible
 
+    # once we iterate through catalog, want to make insertion into ledger
+ 
     # to get id from items_plan    
     id_sql = '''
     SELECT id 
