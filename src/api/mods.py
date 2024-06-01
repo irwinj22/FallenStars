@@ -52,8 +52,8 @@ def attach_mods():
             quantity = mod.quantity
             for item in base_items_dict:
                 # If there are mods that are available and we have weapons to mod, add them!
-                if quantity != 0: 
-                    used_item = item
+                if quantity != 0 and item["qty_change"] > 0: 
+                    used_item = item.copy()
                     # Attach until we run out of weapons or mods.
                     used_item["qty_change"] = -1*min(abs(item["qty_change"]), abs(mod.quantity)) 
                     used_item["credit_change"] = 0 
@@ -67,6 +67,8 @@ def attach_mods():
                     used_items_dict += [used_item] 
                     # The quantity variable keeps track of how many mods are left to use
                     quantity += used_item["qty_change"] 
+                    item["qty_change"] += used_item["qty_change"]
+
 
             # only want to add to mod ledger if there is quantity change
             if quantity - mod.quantity != 0:
