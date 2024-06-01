@@ -4,10 +4,10 @@
 3. That file was eliminated with the redesign, but more complex SQL statements have greatly simplified our application programming.
 4. JOINS are now being used in catalog (lines 18-26, for example).
 5. Agreed -- credits are being tracked by adding the SUM(change) in items_ledger and mods_ledger.
-6. TODO
-7. TODO
-8. TODO
-9. TODO
+6. Both buying plans have been made more sophisticed. 
+7. Both buying plans have been made more sophisticed. 
+8. Both buying plans have been made more sophisticed. 
+9. TODO: rename some variables in mods (?)
 10. Though that endpoint was deleted, we have reduced the number of SQL queries made throughout the entire program. 
 11. That variable was eliminated with the redesign, but we have attempted to make variable naming clearer throughout the whole program. 
 12. Honestly, we are not either. Regardless, that line has been eliminated and all SQL queries have been made much clearer. 
@@ -24,7 +24,7 @@
 9. Carts has been deleted, but total number of connections has been reduced as much as possible.
 10. Repeat code within catalog has been reduced by offering only items. 
 11. More comments have been made throughout the entire program. 
-12. TODO: parameter binding variables have been made more specific. 
+12. parameter binding variables have been made more specific. 
 
 # Code Review Comments: Matthew Province
 1. Syntax has been made more consistent with all-uppercase sql keywords.
@@ -37,7 +37,7 @@
 8. That function has been removed.
 9. Yes, connections within loops have been deleted. 
 10. Yes, that is true. However, feedback has been rejected becuase it feels like more of a personal preference. 
-11. 
+11. TODO: 
 12. Yes, good point -- all of that has been consolidated down into items with different types (weapon, armor, other). 
 
 # Schema/API Design Comments: Isaac Lake
@@ -66,7 +66,7 @@
 # Schema/API Design Comments: Matthew Province
 1. Foreign key references have been created. 
 2. This is a good idea. However, rentals are not being used anymore. 
-3. TODO: set default values correctly. 
+3. Default values are now set correclty .. some are still NULL, but only when appropriate.
 4. TODO: set constraints on what can be entered? 
 5. Feedback has been rejected because we do not know what it means. 
 6. Yes, the units were ambiguous .. 
