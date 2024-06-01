@@ -13,29 +13,29 @@ router = APIRouter(
 
 class Item(BaseModel):
     sku: Literal[
-        'LONGSWORD'
-        'FIRE_LONGSWORD'
-        'EARTH_LONGSWORD'
-        'WATER_LONGSWORD'
-        'PISTOL'
-        'FIRE_PISTOL'
-        'EARTH_PISTOL'
-        'WATER_PISTOL'
-        'SHIELD'
-        'FIRE_SHIELD'
-        'EARTH_SHIELD'
-        'WATER_SHIELD'
-        'HELMET'
-        'FIRE_HELMET'
-        'EARTH_HELMET'
-        'WATER_HELMET'
-        'STAFF'
-        'FIRE_STAFF'
-        'EARTH_STAFF'
-        'WATER_STAFF'
-        'CHAINLINK'
-        'FIRE_CHAINLINK'
-        'EARTH_CHAINLINK'
+        'LONGSWORD',
+        'FIRE_LONGSWORD',
+        'EARTH_LONGSWORD',
+        'WATER_LONGSWORD',
+        'PISTOL',
+        'FIRE_PISTOL',
+        'EARTH_PISTOL',
+        'WATER_PISTOL',
+        'SHIELD',
+        'FIRE_SHIELD',
+        'EARTH_SHIELD',
+        'WATER_SHIELD',
+        'HELMET',
+        'FIRE_HELMET',
+        'EARTH_HELMET',
+        'WATER_HELMET',
+        'STAFF',
+        'FIRE_STAFF',
+        'EARTH_STAFF',
+        'WATER_STAFF',
+        'CHAINLINK',
+        'FIRE_CHAINLINK',
+        'EARTH_CHAINLINK',
         'WATER_CHAINLINK']
     type: Literal["weapon", "armor", "other"]
     price: int = Field(gt=0, lt=200)
@@ -91,7 +91,7 @@ def purchase_items(item_catalog: list[Item]):
     # iterate through each item being offered by Nurane, buy if we have fewer than 6
     for item in item_catalog: 
         # if we have fewer than 6
-        if type_dict[item.type] < 6:
+        if type_dict[item.type] < 6 and item.price <= 25:
             # number we would want to buy, without restrains of price, num offered by Nurane
             num_wanted = min(6, 6 - type_dict[item.type])
             num_can_afford = credits // item.price

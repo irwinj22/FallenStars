@@ -24,7 +24,7 @@ def attach_mods():
      
     # TODO: this function does not work properly ... 
     # attaching even after it runs out of items to attach to 
-    
+
     with db.engine.begin() as connection:
         base_items = connection.execute(sqlalchemy.text("""SELECT item_id, item_sku, type, SUM(qty_change) AS qty_change FROM items_ledger
                                            JOIN items_plan ON items_ledger.item_id = items_plan.id
@@ -133,7 +133,7 @@ def purchase_mods(mod_catalog: list[Mod]):
     # iterate through each item being offered by Nurane, buy according to logic specified above
     for mod in mod_catalog: 
         # if we have fewer than 4
-        if type_dict[mod.sku] < 4:
+        if type_dict[mod.sku] < 4 and mod.price <= 15:
             # number we would want to buy, without restrains of price, num offered by Nurane
             # maybe we could just do a check or something, i am not sure what the best to do this is tbh
             num_wanted = min(4, 4 - type_dict[mod.sku])
