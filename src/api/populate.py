@@ -19,12 +19,12 @@ def populate():
 
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text('''
-        INSERT INTO customers VALUES (0, now(), 'Fallen Stars', 'other');
+        INSERT INTO customers VALUES (0, now(), 'Fallen Stars', 'EXPERT');
 
-        INSERT INTO mods_plan VALUES (0, 'BASIC', 0, ARRAY['weapon', 'armor', 'other'], 'basic');
-        INSERT INTO mods_plan VALUES (1, 'FIRE', 0, ARRAY['weapon', 'armor', 'other'], 'fire');
-        INSERT INTO mods_plan VALUES (2, 'EARTH', 0, ARRAY['weapon', 'armor', 'other'], 'earth');
-        INSERT INTO mods_plan VALUES (3, 'WATER', 0, ARRAY['weapon', 'armor', 'other'], 'water');
+        INSERT INTO mods_plan VALUES (0, 'BASIC', 0, 'basic');
+        INSERT INTO mods_plan VALUES (1, 'FIRE', 0, 'fire');
+        INSERT INTO mods_plan VALUES (2, 'EARTH', 0, 'earth');
+        INSERT INTO mods_plan VALUES (3, 'WATER', 0, 'water');
 
         INSERT INTO items_plan VALUES (1, 'weapon', 30, 0, 'LONGSWORD', ARRAY[30, 0, 1]);
         INSERT INTO items_plan VALUES (2, 'weapon', 50, 1, 'FIRE_LONGSWORD', ARRAY[50, 1, 1]);

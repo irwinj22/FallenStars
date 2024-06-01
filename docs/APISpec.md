@@ -47,6 +47,9 @@ Retrives catalog of rentable items.
         "mod" : "string",
         "price" : "int",
         "qty" : "int"
+    }, 
+    {
+      ...
     }      
 ]
 ```
@@ -82,6 +85,9 @@ Mods are purchased based off the current catalog available for the shop to buy.
         "mod_id": "int",
         "mod_sku": "string", 
         "credit_change": "int"
+    },
+    {
+      ...
     }
 ]
 ```
@@ -185,38 +191,38 @@ Populates shop.
 ```
 
 Possible Item SKUS: 
-'LONGSWORD'
-'FIRE_LONGSWORD'
-'EARTH_LONGSWORD'
-'WATER_LONGSWORD'
-'PISTOL'
-'FIRE_PISTOL'
-'EARTH_PISTOL'
-'WATER_PISTOL'
-'SHIELD;
-'FIRE_SHIELD'
-'EARTH_SHIELD'
-'WATER_SHIELD'
-'HELMET'
-'FIRE_HELMET'
-'EARTH_HELMET'
-'WATER_HELMET'
-'STAFF'
-'FIRE_STAFF'
-'EARTH_STAFF'
-'WATER_STAFF
-'CHAINLINK'
-'FIRE_CHAINLINK'
-'EARTH_CHAINLINK'
-'WATER_CHAINLINK'
+'LONGSWORD'    
+'FIRE_LONGSWORD'    
+'EARTH_LONGSWORD'    
+'WATER_LONGSWORD'    
+'PISTOL'      
+'FIRE_PISTOL'    
+'EARTH_PISTOL'    
+'WATER_PISTOL'    
+'SHIELD'    
+'FIRE_SHIELD'    
+'EARTH_SHIELD'    
+'WATER_SHIELD'    
+'HELMET'    
+'FIRE_HELMET'    
+'EARTH_HELMET'    
+'WATER_HELMET'   
+'STAFF'   
+'FIRE_STAFF'   
+'EARTH_STAFF'   
+'WATER_STAFF'   
+'CHAINLINK'   
+'FIRE_CHAINLINK'   
+'EARTH_CHAINLINK'   
+'WATER_CHAINLINK'   
 
 Possible Roles: 
-"WARRIOR"
-"SUNBLADE"
-"ASSASSIN"
-"NEXUS"
-"SHIFTER"
-"BUILDER"
-"EXPERT"
-"MAGGE"
-"SCOUT"
+'WARRIOR'   
+'SUNBLADE'   
+'ASSASSIN'   
+'NEXUS'   
+'SHIFTER'   
+'BUILDER'   
+'EXPERT'   
+'MAGGE'   
+'SCOUT'   
