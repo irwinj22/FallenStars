@@ -48,7 +48,7 @@ def checkout(customer:Customer, checkout_items: list[CheckoutItem]):
 
     # NOW, make insertion into ledger for each type of item that was bought
     sql = '''
-    SELECT items_plan.id AS "item_id", items_plan.price + mods_plan.markup AS "total_price"
+    SELECT items_plan.id AS "item_id", items_plan.price AS "total_price"
     FROM items_plan
     JOIN mods_plan ON mods_plan.id = items_plan.mod_id
     WHERE items_plan.sku = :item_sku

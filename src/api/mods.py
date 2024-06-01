@@ -61,7 +61,7 @@ def attach_mods():
             connection.execute(sqlalchemy.text("INSERT INTO mods_ledger (qty_change, mod_id, mod_sku, credit_change) VALUES (:qty_change, :mod_id, :mod_sku, :credit_change)"), mod_catalog_dict)
             return "OK"
         else:
-            return "ERROR: mods could not be attached. No items to attach to, or 0 mods entered."
+            return "ERROR: mods could not be attached. No items to attach to, or 0 mods available."
 
 @router.post("/purchase/mods")
 def purchase_mods(mod_catalog: list[Mod]):

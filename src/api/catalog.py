@@ -21,7 +21,7 @@ def get_catalog():
 
     sql = '''
     SELECT items_plan.id AS "item_id", items_plan.sku AS "item_sku", items_plan.type AS "type",
-           mods_plan.id AS "mod_id", mods_plan.sku AS "mod_sku", (items_plan.price + mods_plan.markup) AS "price", 
+           mods_plan.id AS "mod_id", mods_plan.sku AS "mod_sku", items_plan.price AS "price", 
            SUM(items_ledger.qty_change) AS "qty" 
     FROM items_plan
     JOIN items_ledger ON items_ledger.item_id = items_plan.id 

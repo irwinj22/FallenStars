@@ -53,7 +53,7 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
             try:
                 id = connection.execute(sqlalchemy.text(sql), [{"name":customer.name.title(), "role":customer.role.title()}]).scalar()
             except sqlalchemy.exc.SQLAlchemyError as e: 
-                raise HTTPException(status_code=400, detail="Invalid name...ask yo mama for a new one")
+                raise HTTPException(status_code=400, detail="Invalid name")
 
 
     # The roles in our world fall into three categories: Attackers, Defenders, and Specialists
@@ -127,7 +127,8 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
                                                             GROUP BY item_vec
                                                             HAVING SUM(qty_change) > 0"""), [{"x":"weapon"}])
         total_price = 0
-        if w_item_vecs is not None:
+        # if w_item_vecs is not None:
+        if w_item_vecs.rowcount > 0:
             # Set cosine distance is worst possible
             min_dist = 2
             # For each vector in our weapon inventory we will find the vector with the closest distance to the vector constructed with the user's info
@@ -148,7 +149,9 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
                                                             WHERE items_plan.type = :x
                                                             GROUP BY item_vec
                                                             HAVING SUM(qty_change) > 0"""), [{"x":"armor"}])
-        if a_item_vecs is not None:
+        # this is still running even when empty ... the comparison is not working
+        # if a_item_vecs is not None:
+        if a_item_vecs.rowcount > 0:
             min_dist = 2
             for row in a_item_vecs:
                 # NOTE: this line is throwing an erro .. comparison between None and int
@@ -168,7 +171,8 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
                                                             WHERE items_plan.type = :x
                                                             GROUP BY item_vec
                                                             HAVING SUM(qty_change) > 0"""), [{"x":"other"}])
-        if m_item_vecs is not None:
+        # if m_item_vecs is not None:
+        if m_item_vecs.rowcount > 0:
             min_dist = 2
             for row in m_item_vecs:
                 if cosine_distance(row.item_vec, m_given_vec) < min_dist:
