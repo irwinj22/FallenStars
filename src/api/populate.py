@@ -65,5 +65,47 @@ def populate():
 
 @router.post("/million/", tags=["populate"])
 def million():
+    dupe_num = 400000
+    qty_changes = [-2, -1, 1, 2, 3, 4, 5]
+    faker = Faker()
+    roles = ["WARRIOR", "SUNBLADE", "ASSASSIN", "NEXUS", "SHIFTER", "BUILDER", "EXPERT", "MAGGE", "SCOUT"]
+    with db.engine.begin() as connection:
+        items = connection.execute(sqlalchemy.text("select id, sku, price, mod_id, type from items_plan")).fetchall()
+        mods = connection.execute(sqlalchemy.text("select id, sku from mods_plan")).fetchall()
+        possible_items = [[i.id, i.sku, i.price] for i in items]
+        possible_mods = [[m.id, m.sku] for m in mods]
+        q_i = np.random.choice(qty_changes, dupe_num)
+        q_m = np.random.choice(qty_changes, dupe_num)
+        cust_w = [i.sku for i in items if i.type == 'weapon'] + [None]
+        cust_a = [i.sku for i in items if i.type == 'armor'] + [None]
+        cust_o = [i.sku for i in items if i.type == 'other'] + [None]
+        c_role = np.random.choice(roles, dupe_num//2)
+        c_w = np.random.choice(cust_w, dupe_num//2)
+        c_a = np.random.choice(cust_a, dupe_num//2)
+        c_o = np.random.choice(cust_o, dupe_num//2)
+        '''
+        for i in range(dupe_num//2):
+            name = faker.unique.name()
+            print(i)
+            connection.execute(sqlalchemy.text("""insert into customers (name, role, recent_w_rec, recent_a_rec, recent_o_rec) 
+                                               values (:name, :role, :recent_w_rec, :recent_a_rec, :recent_o_rec)"""), 
+                                               {"name": name, "role": c_role[i], "recent_w_rec": c_w[i], "recent_a_rec": c_a[i], "recent_o_rec": c_o[i]})
+        '''
+            
+        c_ids = connection.execute(sqlalchemy.text("select id from customers")).fetchall()
+        c_id_array = np.random.choice([i.id for i in c_ids], dupe_num)
+        items_array = np.random.randint(len(possible_items), size=dupe_num)
+        mods_array = np.random.randint(len(possible_mods), size=dupe_num)
+        for i in range(dupe_num):
+            print(i)
+            connection.execute(sqlalchemy.text("""insert into items_ledger (qty_change, item_id, item_sku, credit_change, customer_id) values
+                                               (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""),
+                                               {"qty_change": int(q_i[i]), "item_id": int(possible_items[items_array[i]][0]), 
+                                                "item_sku": possible_items[items_array[i]][1], "credit_change": int(max(0,possible_items[items_array[i]][2]*q_i[i])),
+                                                "customer_id": int(c_id_array[i])})
+            connection.execute(sqlalchemy.text("""insert into mods_ledger (qty_change, mod_id, mod_sku, credit_change) values
+                                               (:qty_change, :mod_id, :mod_sku, :credit_change)"""),
+                                               {"qty_change": int(q_m[i]), "mod_id": int(possible_mods[mods_array[i]][0]), 
+                                                "mod_sku": possible_mods[mods_array[i]][0], "credit_change": int(max(0,q_m[i]*20))})
 
     return "OK"
