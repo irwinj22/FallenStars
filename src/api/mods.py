@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from src.api import auth
 import sqlalchemy
@@ -136,8 +136,12 @@ def purchase_mods(mod_catalog: list[Mod]):
 
     # iterate through each item being offered by Nurane, buy according to logic specified above
     for mod in mod_catalog: 
-        # if we have fewer than 4
-        if type_dict[mod.sku] < 4 and mod.price <= 15:
+        # input validation: the sku has to match the type
+        if mod.sku.lower() != mod.type: 
+            raise HTTPException(status_code=422, detail="Transaction Failed: Mod SKU Does Not Match Mod Type")
+       
+        # NOTE: we only want to buy if we have fewer than 4 and price is "reasonable"
+        if type_dict[mod.sku] < 4 and mod.price <= 20:
             # number we would want to buy, without restrains of price, num offered by Nurane
             # maybe we could just do a check or something, i am not sure what the best to do this is tbh
             num_wanted = min(4, 4 - type_dict[mod.sku])

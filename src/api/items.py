@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from src.api import auth
 import sqlalchemy
@@ -13,31 +13,12 @@ router = APIRouter(
 )
 
 class Item(BaseModel):
-    sku: Literal[
-        'LONGSWORD',
-        'FIRE_LONGSWORD',
-        'EARTH_LONGSWORD',
-        'WATER_LONGSWORD',
-        'PISTOL',
-        'FIRE_PISTOL',
-        'EARTH_PISTOL',
-        'WATER_PISTOL',
-        'SHIELD',
-        'FIRE_SHIELD',
-        'EARTH_SHIELD',
-        'WATER_SHIELD',
-        'HELMET',
-        'FIRE_HELMET',
-        'EARTH_HELMET',
-        'WATER_HELMET',
-        'STAFF',
-        'FIRE_STAFF',
-        'EARTH_STAFF',
-        'WATER_STAFF',
-        'CHAINLINK',
-        'FIRE_CHAINLINK',
-        'EARTH_CHAINLINK',
-        'WATER_CHAINLINK']
+    sku: Literal['LONGSWORD','FIRE_LONGSWORD','EARTH_LONGSWORD','WATER_LONGSWORD',
+        'PISTOL','FIRE_PISTOL','EARTH_PISTOL','WATER_PISTOL',
+        'SHIELD','FIRE_SHIELD','EARTH_SHIELD','WATER_SHIELD',
+        'HELMET','FIRE_HELMET','EARTH_HELMET','WATER_HELMET',
+        'STAFF','FIRE_STAFF','EARTH_STAFF','WATER_STAFF',
+        'CHAINLINK','FIRE_CHAINLINK','EARTH_CHAINLINK','WATER_CHAINLINK']
     type: Literal["weapon", "armor", "other"]
     price: int = Field(gt=0, lt=200)
     quantity: int = Field(gt=0, lt=20)
@@ -49,9 +30,14 @@ def purchase_items(item_catalog: list[Item]):
     '''
 
     '''
-    NEW LOGIC: 
+    Current buying logic: 
     Buy so that we have 6 items of each type (weapon, armor, other)
     '''
+
+    # to validate input: item type has to match item sku
+    all_weapons = ['LONGSWORD','FIRE_LONGSWORD','EARTH_LONGSWORD','WATER_LONGSWORD','PISTOL','FIRE_PISTOL','EARTH_PISTOL','WATER_PISTOL']
+    all_armor = ['SHIELD','FIRE_SHIELD','EARTH_SHIELD','WATER_SHIELD','HELMET','FIRE_HELMET','EARTH_HELMET','WATER_HELMET']
+    all_other = ['STAFF','FIRE_STAFF','EARTH_STAFF','WATER_STAFF','CHAINLINK','FIRE_CHAINLINK','EARTH_CHAINLINK','WATER_CHAINLINK']
 
     order = []
 
@@ -84,7 +70,7 @@ def purchase_items(item_catalog: list[Item]):
     for value in num_each_type:
         type_dict[value[0]] = value[1]
 
-    # fill in, just in case haven't bought item of certain type
+    # fill in dictionary in case we haven't bought item of certain type
     if "weapon" not in type_dict:
         type_dict["weapon"] = 0
     if "armor" not in type_dict:
@@ -93,9 +79,15 @@ def purchase_items(item_catalog: list[Item]):
         type_dict["other"] = 0
   
     # iterate through each item being offered by Nurane, buy if we have fewer than 6
-    for item in item_catalog: 
-        # if we have fewer than 6
-        if type_dict[item.type] < 6 and item.price <= 25:
+    for item in item_catalog:      
+        # input validation: item type has to match sku
+        if ((item.type == "weapon" and item.sku not in all_weapons) or 
+        (item.type == "armor" and item.sku not in all_armor) or 
+        (item.type == "other" and item.sku not in all_other)):
+            raise HTTPException(status_code=422, detail="Transaction Failed: Item SKU Does Not Match Item Type")
+        
+        # NOTE: we only want to buy if we have fewer than 6 and the price is "reasonable"
+        if type_dict[item.type] < 6 and item.price <= 40:
             # number we would want to buy, without restrains of price, num offered by Nurane
             num_wanted = min(6, 6 - type_dict[item.type])
             num_can_afford = credits // item.price
@@ -116,7 +108,7 @@ def purchase_items(item_catalog: list[Item]):
             # update num we have in dictionary (in case another item of same type offered later)
             type_dict[item.type] += num_possible
 
-    # once we iterate through catalog, want to make insertion into ledger
+    # NOTE: once we iterate through catalog, want to make insertion into ledger
  
     # to get id from items_plan    
     id_sql = '''

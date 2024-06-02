@@ -73,6 +73,9 @@ Mods are purchased based off the current catalog available for the shop to buy.
     "compatible": [
       "string"
     ]
+  },
+  {
+    ...
   }
 ]
 ```
@@ -120,6 +123,7 @@ A customer makes a purchase and logs their relevant information.
       "item_sku": "string", /* One of Possible Item SKUS listed below */
       "qty": 0 /* Between 1 and 20 */
     }
+    ...
   ]
 }
 ```
