@@ -69,7 +69,7 @@ def populate():
 
 @router.post("/customer_population/", tags=["populate"])
 def customer_population():
-    dupe_num = 1000
+    dupe_num = 200000
     faker = Faker()
     np.random.seed(42)
     roles = ["WARRIOR", "SUNBLADE", "ASSASSIN", "NEXUS", "SHIFTER", "BUILDER", "EXPERT", "MAGGE", "SCOUT"]
@@ -90,9 +90,9 @@ def customer_population():
                                             values (:name, :role, :recent_w_rec, :recent_a_rec, :recent_o_rec)"""), 
                                             {"name": name, "role": c_role[i], "recent_w_rec": c_w[i], "recent_a_rec": c_a[i], "recent_o_rec": c_o[i]})
     
-@router.post("/million/", tags=["populate"])
-def million():
-    dupe_num = 1000
+@router.post("/items_mods_population/", tags=["populate"])
+def items_mods_population():
+    dupe_num = 400000
     qty_changes = [1, 2, 3, 4, 5]
     c_check = True
     np.random.seed(42)
