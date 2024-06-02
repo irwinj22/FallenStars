@@ -3,6 +3,7 @@ from src import database as db
 from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
+import time
 
 router = APIRouter(
     prefix="/checkout",
@@ -23,6 +24,7 @@ class CheckoutItem(BaseModel):
 router = APIRouter()
 @router.post("/checkout/", tags=["checkout"])
 def checkout(customer:Customer, checkout_items: list[CheckoutItem]):
+    start_time = time.time()
     '''
     Customer purchases item(s).
     '''
@@ -67,6 +69,7 @@ def checkout(customer:Customer, checkout_items: list[CheckoutItem]):
             connection.execute(sqlalchemy.text(item_sql), 
                                 [{"qty_change":-item.qty, "item_id":info.item_id, "item_sku":item.item_sku, "credit_change":info.total_price, "customer_id":id}])
 
+    print('Process finished --- %s seconds ---' % (time.time()-start_time))
     return "OK"
 
     # TODO: return what the customer is purchasing ... 

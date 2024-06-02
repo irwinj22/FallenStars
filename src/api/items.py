@@ -5,6 +5,7 @@ import sqlalchemy
 from sqlalchemy.exc import DBAPIError
 from src import database as db
 from typing import Literal
+import time
 
 router = APIRouter(
     prefix="/items",
@@ -44,6 +45,8 @@ class Item(BaseModel):
 
 @router.post("/purchase/items")
 def purchase_items(item_catalog: list[Item]):
+    start_time = time.time()
+
     '''
     Nurane gives list of items, we buy inventory accordingly. 
     '''
@@ -91,7 +94,7 @@ def purchase_items(item_catalog: list[Item]):
         type_dict["armor"] = 0
     if "other" not in type_dict:
         type_dict["other"] = 0
-  
+    
     # iterate through each item being offered by Nurane, buy if we have fewer than 6
     for item in item_catalog: 
         # if we have fewer than 6
@@ -140,4 +143,5 @@ def purchase_items(item_catalog: list[Item]):
     except DBAPIError as error:
         print(f"Error returned: <<<{error}>>>")
 
+    print('Process finished --- %s seconds ---' % (time.time()-start_time))
     return order

@@ -5,6 +5,7 @@ import sqlalchemy
 from src import database as db
 from typing import Literal
 from sqlalchemy.exc import DBAPIError
+import time
 
 router = APIRouter(
     prefix="/mods",
@@ -20,6 +21,7 @@ class Mod(BaseModel):
 
 @router.post("/attach/mods")
 def attach_mods():
+    start_time = time.time()
     '''
     Attaching mods to items. 
     '''
@@ -77,6 +79,7 @@ def attach_mods():
                 connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change) 
                                                 VALUES (:qty_change, :item_id, :item_sku, :credit_change)"""), used_items_dict + final_items) # Insert all changes (Base items removed), modded versions added
                 connection.execute(sqlalchemy.text("INSERT INTO mods_ledger (qty_change, mod_id, mod_sku, credit_change) VALUES (:qty_change, :mod_id, :mod_sku, :credit_change)"), mod_catalog_dict)
+                print('Process finished --- %s seconds ---' % (time.time()-start_time))
                 return "OK"
             else:
                 return "ERROR: mods could not be attached. No items to attach to, or 0 mods available."

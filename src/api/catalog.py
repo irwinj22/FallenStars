@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from src import database as db
 from src.api import auth
 import sqlalchemy
+import time
 
 router = APIRouter(
     prefix="/catalog",
@@ -13,6 +14,7 @@ router = APIRouter(
 router = APIRouter()
 @router.get("/catalog/", tags=["catalog"])
 def get_catalog():
+    start_time = time.time()
     '''
     Offer all possible items to customer.
     '''
@@ -46,5 +48,6 @@ def get_catalog():
             }      
         )
 
+    print('Process finished --- %s seconds ---' % (time.time()-start_time))
     return json
   
