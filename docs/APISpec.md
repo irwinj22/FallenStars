@@ -144,7 +144,7 @@ Get a recommended kit of an ideal weapon, armor, and misc. item given past purch
 ```json
 [
     {
-        "budget": "integer", /* Between 1 and 2000 */ 
+        "budget": "integer", /* Between 1 and 400 */ 
         "enemy_element": "string", /* One of ["FIRE", "EARTH", "WATER"] */
         "name": "string", /* Matching regex ^[a-zA-Z0-9_]{1,20}$ */
         "role": "string" /* One of the Possibile Roles listed at the bottom */

@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from src.api import auth
 import sqlalchemy
 from src import database as db
 import numpy as np
 import random
 from src.api import checkout
+from typing import Literal
 
 router = APIRouter(
     prefix="/recommendations",
@@ -14,12 +15,21 @@ router = APIRouter(
 )
 
 class Customer(BaseModel):
-    name: str
-    role: str
+    name: str = Field(regex=r"^[a-zA-Z0-9_ ]{1,20}$")
+    role: Literal['WARRIOR','SUNBLADE','ASSASSIN','NEXUS','SHIFTER','BUILDER','EXPERT','MAGE','SCOUT']
 
 class CheckoutItem(BaseModel):
-    item_sku: str
-    qty: int
+    item_sku: Literal['LONGSWORD','FIRE_LONGSWORD','EARTH_LONGSWORD','WATER_LONGSWORD',
+        'PISTOL','FIRE_PISTOL','EARTH_PISTOL','WATER_PISTOL',
+        'SHIELD','FIRE_SHIELD','EARTH_SHIELD','WATER_SHIELD',
+        'HELMET','FIRE_HELMET','EARTH_HELMET','WATER_HELMET',
+        'STAFF','FIRE_STAFF','EARTH_STAFF','WATER_STAFF',
+        'CHAINLINK','FIRE_CHAINLINK','EARTH_CHAINLINK','WATER_CHAINLINK']
+    qty: int= Field(gt=0, lt=20)
+
+class CustomerSpecs(BaseModel):
+    budget: int = Field(gt=0, lt=400)
+    enemy_element: Literal["FIRE", "EARTH", "WATER"]
 
 def cosine_distance(v1, v2):
     v1 = np.array(v1) * np.array([0.001, 1, 1])
@@ -29,8 +39,9 @@ def cosine_distance(v1, v2):
     norm_v2 = np.linalg.norm(v2)
     return 1-(dot_product / (norm_v1 * norm_v2))
 
+# TODO: have to validate budget, enemy_element 
 @router.post("/recommend")
-def recommend(customer:Customer, budget: int, enemy_element: str):
+def recommend(customer:Customer, specs:CustomerSpecs):
     '''
     Recommend purchases to customers. 
     '''
@@ -76,17 +87,17 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
         object_type = role_map.get(customer.role.upper(),3)
 
         if object_type == 1:
-            w_budget = int(budget*0.5)
-            a_budget = int(budget*0.25)
-            m_budget = int(budget*0.25)
+            w_budget = int(specs.budget*0.5)
+            a_budget = int(specs.budget*0.25)
+            m_budget = int(specs.budget*0.25)
         elif object_type == 2:
-            w_budget = int(budget*0.25)
-            a_budget = int(budget*0.5)
-            m_budget = int(budget*0.25)
+            w_budget = int(specs.budget*0.25)
+            a_budget = int(specs.budget*0.5)
+            m_budget = int(specs.budget*0.25)
         else:
-            w_budget = int(budget*0.25)
-            a_budget = int(budget*0.25)
-            m_budget = int(budget*0.5)
+            w_budget = int(specs.budget*0.25)
+            a_budget = int(specs.budget*0.25)
+            m_budget = int(specs.budget*0.5)
 
         # Offensively speaking, water beats Fire
         # Earth beats Water
@@ -110,8 +121,8 @@ def recommend(customer:Customer, budget: int, enemy_element: str):
         "BASIC": 0
                         }
         
-        w_element = enemy_element_attack_map.get(enemy_element.upper(), 0)
-        a_element = enemy_element_defense_map.get(enemy_element.upper(), 0)
+        w_element = enemy_element_attack_map.get(specs.enemy_element.upper(), 0)
+        a_element = enemy_element_defense_map.get(specs.enemy_element.upper(), 0)
         m_element = random.randint(0, 3)
 
         w_given_vec = [w_budget, w_element, 1]
