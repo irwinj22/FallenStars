@@ -5,6 +5,7 @@ import sqlalchemy
 from src import database as db
 from typing import Literal
 from sqlalchemy.exc import DBAPIError
+import time
 
 router = APIRouter(
     prefix="/mods",
@@ -23,7 +24,7 @@ def attach_mods():
     '''
     Attaching mods to items. 
     '''
-     
+    start_time = time.time()
     # TODO: this function does not work properly ... 
     # attaching even after it runs out of items to attach to 
     try: 
@@ -46,6 +47,7 @@ def attach_mods():
             planned_items_dict = [row._asdict() for row in planned_items.fetchall()] 
 
             final_items = []
+            # TODO: these aren't dictionaries though? 
             used_items_dict = []
             mod_catalog_dict = []
 
@@ -53,8 +55,8 @@ def attach_mods():
                 quantity = mod.quantity
                 for item in base_items_dict:
                     # If there are mods that are available and we have weapons to mod, add them!
-                    if quantity != 0: 
-                        used_item = item
+                    if quantity != 0 and item["qty_change"] > 0: 
+                        used_item = item.copy()
                         # Attach until we run out of weapons or mods.
                         used_item["qty_change"] = -1*min(abs(item["qty_change"]), abs(mod.quantity)) 
                         used_item["credit_change"] = 0 
@@ -68,6 +70,8 @@ def attach_mods():
                         used_items_dict += [used_item] 
                         # The quantity variable keeps track of how many mods are left to use
                         quantity += used_item["qty_change"] 
+                        item["qty_change"] += used_item["qty_change"]
+
 
                 # only want to add to mod ledger if there is quantity change
                 if quantity - mod.quantity != 0:
@@ -77,12 +81,14 @@ def attach_mods():
                 connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change) 
                                                 VALUES (:qty_change, :item_id, :item_sku, :credit_change)"""), used_items_dict + final_items) # Insert all changes (Base items removed), modded versions added
                 connection.execute(sqlalchemy.text("INSERT INTO mods_ledger (qty_change, mod_id, mod_sku, credit_change) VALUES (:qty_change, :mod_id, :mod_sku, :credit_change)"), mod_catalog_dict)
+                print("Process finished --- %s seconds ---" % (time.time() - start_time))
                 return "OK"
             else:
+                print("Process finished --- %s seconds ---" % (time.time() - start_time))
                 return "ERROR: mods could not be attached. No items to attach to, or 0 mods available."
+        
     except DBAPIError as error:
         print(f"Error returned: <<<{error}>>>")
-
 @router.post("/purchase/mods")
 def purchase_mods(mod_catalog: list[Mod]):
     '''
@@ -106,7 +112,7 @@ def purchase_mods(mod_catalog: list[Mod]):
     FROM mods_ledger
     GROUP BY mod_sku
     '''
-
+    start_time = time.time()
     # NOTE: this will return None if there are no entries in either of the ledgers ... 
     try:
         with db.engine.begin() as connection:
@@ -184,5 +190,6 @@ def purchase_mods(mod_catalog: list[Mod]):
                 connection.execute(sqlalchemy.text(pur_sql), [{"qty":line_item['qty'], "mod_id":id, "mod_sku":line_item['sku'], "credit_change": -line_item['price'] * line_item['qty']}])
     except DBAPIError as error:
         print(f"Error returned: <<<{error}>>>")
-        
+    
+    print("Process finished --- %s seconds ---" % (time.time() - start_time))
     return order

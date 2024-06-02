@@ -69,13 +69,12 @@ def populate():
 
 @router.post("/customer_population/", tags=["populate"])
 def customer_population():
-    dupe_num = 200000
+    dupe_num = 400000
     faker = Faker()
     np.random.seed(42)
     roles = ["WARRIOR", "SUNBLADE", "ASSASSIN", "NEXUS", "SHIFTER", "BUILDER", "EXPERT", "MAGGE", "SCOUT"]
     with db.engine.begin() as connection:
         items = connection.execute(sqlalchemy.text("select id, sku, price, mod_id, type from items_plan")).fetchall()
-        mods = connection.execute(sqlalchemy.text("select id, sku from mods_plan")).fetchall()
         cust_w = [i.sku for i in items if i.type == 'weapon'] + [None]
         cust_a = [i.sku for i in items if i.type == 'armor'] + [None]
         cust_o = [i.sku for i in items if i.type == 'other'] + [None]
@@ -85,6 +84,7 @@ def customer_population():
         c_o = np.random.choice(cust_o, dupe_num//2)
             
         for i in range(dupe_num//2):
+            print(i)
             name = faker.unique.name()
             connection.execute(sqlalchemy.text("""insert into customers (name, role, recent_w_rec, recent_a_rec, recent_o_rec) 
                                             values (:name, :role, :recent_w_rec, :recent_a_rec, :recent_o_rec)"""), 
