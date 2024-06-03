@@ -197,9 +197,32 @@ def recommend(customer:Customer, specs:CustomerSpecs):
             total_price += info3.price
         else:
             rec_other_sku = "NA"
-
+        
+        # Get a list of the customers inventory
+        results = connection.execute(sqlalchemy.text("""SELECT item_sku, customer_id, items_plan.type AS type
+                                                FROM items_ledger
+                                                JOIN items_plan ON items_plan.sku = items_ledger.item_sku
+                                                WHERE customer_id = (SELECT id FROM customers
+                                                WHERE name = :x)
+                                                GROUP BY item_sku, customer_id, items_plan.type
+                                                HAVING SUM(qty_change) < 0
+                                                ORDER BY items_plan.type ASC"""), [{"x":customer.name.title()}]).fetchall()
+        # if the customer already has an item we recommend to them, then return NA for that item recommendation
+        for row in results:
+            if row.type == 'weapon' and row.item_sku == rec_weapon_sku:
+                rec_weapon_sku = "NA"
+                total_price -= info1.price
+            if row.type == 'armor' and row.item_sku == rec_armor_sku:
+                rec_armor_sku = "NA"
+                total_price -= info2.price
+            if row.type == 'other' and row.item_sku == rec_other_sku:
+                rec_other_sku = "NA"
+                total_price -= info3.price
+        
         connection.execute(sqlalchemy.text("""UPDATE customers SET recent_w_rec = :x, recent_a_rec = :y, recent_o_rec = :z
                                            WHERE name = :w"""), [{"x":rec_weapon_sku, "y": rec_armor_sku, "z":rec_other_sku, "w": customer.name.title()}])
+        
+
 
 
         
@@ -217,18 +240,46 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
 
     # Initializing the list of items the customer will be "buying"
     checkout_list = []
+    old = []
+    new = []
+    temp_weapon = False
+    temp_armor = False
+    temp_other = False
 
     with db.engine.begin() as connection:
+        inventory = []
         # Accesses the sku and corresponding customer id for the items that the customer has currently in their inventory
-        results = connection.execute(sqlalchemy.text("""SELECT item_sku, customer_id 
+        results = connection.execute(sqlalchemy.text("""SELECT item_sku, customer_id, items_plan.type AS type
                                                 FROM items_ledger
                                                 JOIN items_plan ON items_plan.sku = items_ledger.item_sku
                                                 WHERE customer_id = (SELECT id FROM customers
                                                 WHERE name = :x)
                                                 GROUP BY item_sku, customer_id, items_plan.type
                                                 HAVING SUM(qty_change) < 0
-                                                ORDER BY items_plan.type ASC"""), [{"x":customer.name.title(), "y":"weapon"}]).fetchall()
+                                                ORDER BY items_plan.type ASC"""), [{"x":customer.name.title()}]).fetchall()
+        if not results:
+            raise HTTPException(status_code=404, detail=f"No items found in the inventory for customer {customer.name.title()}")
         
+        print(temp_armor)
+        for row in results:
+            if row.type == 'weapon' and temp_weapon == False:
+                temp_weapon = True
+                inventory.append([1, row.item_sku, row.customer_id])
+            if row.type == 'armor'and temp_armor == False:
+                temp_armor = True
+                inventory.append([2, row.item_sku, row.customer_id])
+            if row.type == 'other' and temp_other == False:
+                temp_other = True
+                inventory.append([3, row.item_sku, row.customer_id])
+        if weapon == True:
+            weapon = temp_weapon
+        if armor == True:
+            armor = temp_armor
+        if other == True:
+            other = temp_other
+
+        inventory.sort(key=lambda x: x[0])
+
         # Access the skus of the items we recommended to the user
         rec_skus = connection.execute(sqlalchemy.text("""SELECT recent_w_rec, recent_a_rec, recent_o_rec FROM customers 
                                                WHERE name = :x"""), [{"x":customer.name.title()}]).fetchone()
@@ -237,53 +288,56 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
                 raise HTTPException(status_code=404, detail=f"No previous recommendations found for {customer.name.title()}")
         
         # If the customer wants to swap their weapon...
-        if weapon and rec_skus[0][0] != "NA":
+        if weapon and rec_skus[0] != "NA" and inventory[0][1] != rec_skus[0]:
             # if not results[2]:
                 # raise HTTPException(status_code=404, detail=f"No weapons found in the inventory for customer {customer.name.title()}")
             
             # Accesses the id and price from items_plan of the weapon that the customer has in their inventory
             details = connection.execute(sqlalchemy.text("""SELECT id, price FROM items_plan
-                                                         WHERE sku = :x"""), [{"x":results[2][0]}]).fetchone()
+                                                         WHERE sku = :x"""), [{"x":inventory[0][1]}]).fetchone()
             
             # Completes the return of the customer's weapon to Fallen Stars Armory
             connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change, customer_id) 
                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""), 
-                                [{"qty_change":1, "item_id":details[0], "item_sku":results[2][0], "credit_change":-details[1], "customer_id":results[2][1]}])
-            
+                                [{"qty_change":1, "item_id":details[0], "item_sku":inventory[0][1], "credit_change":-details[1], "customer_id":inventory[0][2]}])
+            old.append(inventory[0][1])
+            new.append(rec_skus[0])        
             # Stages the recommended weapon to be checked out
             checkout_list.append(CheckoutItem(item_sku=rec_skus[0], qty=1))
 
         # If the customer wants to swap their armor...
-        if armor and rec_skus[0][1] != "NA":
+        if armor and rec_skus[1] != "NA" and inventory[1][1] != rec_skus[1]:
             # if not results[0]:
                 # raise HTTPException(status_code=404, detail=f"No armor found in the inventory for customer {customer.name.title()}")
             
             # Accesses the id and price from items_plan of the armor that the customer has in their inventory
             details = connection.execute(sqlalchemy.text("""SELECT id, price FROM items_plan
-                                                         WHERE sku = :x"""), [{"x":results[0][0]}]).fetchone()
+                                                         WHERE sku = :x"""), [{"x":inventory[1][1]}]).fetchone()
             
             # Completes the return of the customer's armor to Fallen Stars Armory
             connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change, customer_id) 
                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""), 
-                                [{"qty_change":1, "item_id":details[0], "item_sku":results[0][0], "credit_change":-details[1], "customer_id":results[0][1]}])
-            
+                                [{"qty_change":1, "item_id":details[0], "item_sku":inventory[1][1], "credit_change":-details[1], "customer_id":inventory[1][2]}])
+            old.append(inventory[1][1])
+            new.append(rec_skus[1])
             # Stages the recommended armor to be checked out
             checkout_list.append(CheckoutItem(item_sku=rec_skus[1], qty=1))
 
         # If the customer wants to swap their "other item"...
-        if other and rec_skus[0][2] != "NA":
+        if other and rec_skus[2] != "NA" and inventory[2][1] != rec_skus[2]:
             # if not results[1]:
                 # raise HTTPException(status_code=404, detail=f"No misc. items found in the inventory for customer {customer.name.title()}")
             
             # Accesses the id and price from items_plan of the armor that the customer has in their inventory
             details = connection.execute(sqlalchemy.text("""SELECT id, price FROM items_plan
-                                                         WHERE sku = :x"""), [{"x":results[1][0]}]).fetchone()
+                                                         WHERE sku = :x"""), [{"x":inventory[2][1]}]).fetchone()
             
             # Completes the return of the customer's armor to Fallen Stars Armory
             connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change, customer_id) 
                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""), 
-                                [{"qty_change":1, "item_id":details[0], "item_sku":results[1][0], "credit_change":-details[1], "customer_id":results[1][1]}])
-            
+                                [{"qty_change":1, "item_id":details[0], "item_sku":inventory[2][1], "credit_change":-details[1], "customer_id":inventory[2][2]}])
+            old.append(inventory[2][1])
+            new.append(rec_skus[2])
             # Stages the recommended other to be checked out
             checkout_list.append(CheckoutItem(item_sku=rec_skus[2], qty=1))
 
@@ -292,5 +346,8 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
         checkout.checkout(customer, checkout_list)
     except:
         raise HTTPException(status_code=404, detail="Checkout failed, please contact Fallen Stars")
+    if not old and not new:
+        return {"Swapped": "Nothing"}
     
-    return "OK"
+    result_string = ', '.join(old) + " for " + ', '.join(new)
+    return {"Swapped": result_string}
