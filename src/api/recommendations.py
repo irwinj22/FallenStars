@@ -149,8 +149,6 @@ def recommend(customer:Customer, specs:CustomerSpecs):
                     w_rec_vec = row.item_vec
             info1 = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
                                                         WHERE item_vec = :x"""), [{"x":w_rec_vec}]).fetchone()
-            # rec_weapon_sku = info1[0]
-            # total_price += info1[1]
             rec_weapon_sku = info1.sku
             total_price += info1.price
         else:
@@ -198,6 +196,11 @@ def recommend(customer:Customer, specs:CustomerSpecs):
         else:
             rec_other_sku = "NA"
         
+
+        # info1 = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
+        #                                                 WHERE item_vec = :x"""), [{"x":w_rec_vec}]).fetchone()
+        # rec_weapon_sku = info1.sku
+        # total_price += info1.price
         # Get a list of the customers inventory
         results = connection.execute(sqlalchemy.text("""SELECT item_sku, customer_id, items_plan.type AS type
                                                 FROM items_ledger
@@ -260,7 +263,6 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
         if not results:
             raise HTTPException(status_code=404, detail=f"No items found in the inventory for customer {customer.name.title()}")
         
-        print(temp_armor)
         for row in results:
             if row.type == 'weapon' and temp_weapon == False:
                 temp_weapon = True
@@ -288,7 +290,7 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
                 raise HTTPException(status_code=404, detail=f"No previous recommendations found for {customer.name.title()}")
         
         # If the customer wants to swap their weapon...
-        if weapon and rec_skus[0] != "NA" and inventory[0][1] != rec_skus[0]:
+        if weapon and rec_skus.recent_w_rec != "NA" and inventory[0][1] != rec_skus.recent_w_rec:
             # if not results[2]:
                 # raise HTTPException(status_code=404, detail=f"No weapons found in the inventory for customer {customer.name.title()}")
             
@@ -301,12 +303,12 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""), 
                                 [{"qty_change":1, "item_id":details[0], "item_sku":inventory[0][1], "credit_change":-details[1], "customer_id":inventory[0][2]}])
             old.append(inventory[0][1])
-            new.append(rec_skus[0])        
+            new.append(rec_skus.recent_w_rec)        
             # Stages the recommended weapon to be checked out
-            checkout_list.append(CheckoutItem(item_sku=rec_skus[0], qty=1))
+            checkout_list.append(CheckoutItem(item_sku=rec_skus.recent_w_rec, qty=1))
 
         # If the customer wants to swap their armor...
-        if armor and rec_skus[1] != "NA" and inventory[1][1] != rec_skus[1]:
+        if armor and rec_skus.recent_a_rec != "NA" and inventory[1][1] != rec_skus.recent_a_rec:
             # if not results[0]:
                 # raise HTTPException(status_code=404, detail=f"No armor found in the inventory for customer {customer.name.title()}")
             
@@ -319,12 +321,12 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""), 
                                 [{"qty_change":1, "item_id":details[0], "item_sku":inventory[1][1], "credit_change":-details[1], "customer_id":inventory[1][2]}])
             old.append(inventory[1][1])
-            new.append(rec_skus[1])
+            new.append(rec_skus.recent_a_rec)
             # Stages the recommended armor to be checked out
-            checkout_list.append(CheckoutItem(item_sku=rec_skus[1], qty=1))
+            checkout_list.append(CheckoutItem(item_sku=rec_skus.recent_a_rec, qty=1))
 
         # If the customer wants to swap their "other item"...
-        if other and rec_skus[2] != "NA" and inventory[2][1] != rec_skus[2]:
+        if other and rec_skus.recent_o_rec != "NA" and inventory[2][1] != rec_skus.recent_o_rec:
             # if not results[1]:
                 # raise HTTPException(status_code=404, detail=f"No misc. items found in the inventory for customer {customer.name.title()}")
             
@@ -337,9 +339,9 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""), 
                                 [{"qty_change":1, "item_id":details[0], "item_sku":inventory[2][1], "credit_change":-details[1], "customer_id":inventory[2][2]}])
             old.append(inventory[2][1])
-            new.append(rec_skus[2])
+            new.append(rec_skus.recent_0_rec)
             # Stages the recommended other to be checked out
-            checkout_list.append(CheckoutItem(item_sku=rec_skus[2], qty=1))
+            checkout_list.append(CheckoutItem(item_sku=rec_skus.recent_o_rec, qty=1))
 
     # Performs a checkout on the new items
     try:
