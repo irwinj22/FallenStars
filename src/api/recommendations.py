@@ -147,10 +147,10 @@ def recommend(customer:Customer, specs:CustomerSpecs):
                 if cosine_distance(row.item_vec, w_given_vec) < min_dist:
                     min_dist = cosine_distance(row.item_vec, w_given_vec)
                     w_rec_vec = row.item_vec
-            # info1 = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
-            #                                             WHERE item_vec = :x"""), [{"x":w_rec_vec}]).fetchone()
-            # rec_weapon_sku = info1.sku
-            # total_price += info1.price
+            info1 = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
+                                                        WHERE item_vec = :x"""), [{"x":w_rec_vec}]).fetchone()
+            rec_weapon_sku = info1.sku
+            total_price += info1.price
         else:
             rec_weapon_sku = "NA"
         
@@ -169,10 +169,10 @@ def recommend(customer:Customer, specs:CustomerSpecs):
                 if cosine_distance(row.item_vec, a_given_vec) < min_dist:
                     min_dist = cosine_distance(row.item_vec, a_given_vec)
                     a_rec_vec = row.item_vec
-            # info2 = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
-            #                                             WHERE item_vec = :x"""), [{"x":a_rec_vec}]).fetchone()
-            # rec_armor_sku = info2.sku
-            # total_price += info2.price
+            info2 = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
+                                                        WHERE item_vec = :x"""), [{"x":a_rec_vec}]).fetchone()
+            rec_armor_sku = info2.sku
+            total_price += info2.price
         else:
             rec_armor_sku = "NA"
         
@@ -189,29 +189,13 @@ def recommend(customer:Customer, specs:CustomerSpecs):
                 if cosine_distance(row.item_vec, m_given_vec) < min_dist:
                     min_dist = cosine_distance(row.item_vec, m_given_vec)
                     m_rec_vec = row.item_vec
-            # info3 = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
-            #                                             WHERE item_vec = :x"""), [{"x":m_rec_vec}]).fetchone()
-            # rec_other_sku = info3.sku
-            # total_price += info3.price
+            info3 = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
+                                                        WHERE item_vec = :x"""), [{"x":m_rec_vec}]).fetchone()
+            rec_other_sku = info3.sku
+            total_price += info3.price
         else:
             rec_other_sku = "NA"
         
-
-        info = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
-                                                    WHERE item_vec = :x OR item_vec = :y OR item_vec = :z
-                                                  ORDER BY type"""), [{"x":w_rec_vec, "y":a_rec_vec, "z":m_rec_vec}]).fetchall()
-        total_price1=0
-        if info[2]:
-            rec_weapon_sku = info[2][0]
-            total_price1 += info[2][1]
-        if info[0]:
-            rec_armor_sku = info[0][0]
-            total_price1 += info[0][1]
-        if info[1]:
-            rec_other_sku = info[1][0]
-            total_price1 += info[0][1]
-        
-        # total_price += info1.price
         # Get a list of the customers inventory
         results = connection.execute(sqlalchemy.text("""SELECT item_sku, customer_id, items_plan.type AS type
                                                 FROM items_ledger
@@ -225,16 +209,13 @@ def recommend(customer:Customer, specs:CustomerSpecs):
         for row in results:
             if row.type == 'weapon' and row.item_sku == rec_weapon_sku:
                 rec_weapon_sku = "NA"
-                total_price1 -= info[2][1]
-                #total_price -= info1.price
+                total_price -= info1.price
             if row.type == 'armor' and row.item_sku == rec_armor_sku:
                 rec_armor_sku = "NA"
-                total_price1 -= info[0][1]
-                #total_price -= info2.price
+                total_price -= info2.price
             if row.type == 'other' and row.item_sku == rec_other_sku:
                 rec_other_sku = "NA"
-                total_price1 -= info[1][1]
-               # total_price -= info3.price
+                total_price -= info3.price
         
         
         connection.execute(sqlalchemy.text("""UPDATE customers SET recent_w_rec = :x, recent_a_rec = :y, recent_o_rec = :z
@@ -247,7 +228,7 @@ def recommend(customer:Customer, specs:CustomerSpecs):
     
     # Return a list of skus of the kit of wepaon, amror, and item with the respective "closest" vectors as our recommendation
 
-    return {"Rec. Weapon": rec_weapon_sku, "Rec. Armor": rec_armor_sku, "Rec. Other": rec_other_sku, "Total Cost": total_price1}
+    return {"Rec. Weapon": rec_weapon_sku, "Rec. Armor": rec_armor_sku, "Rec. Other": rec_other_sku, "Total Cost": total_price}
 
 
 @router.post("/swap")
