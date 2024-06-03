@@ -16,7 +16,7 @@ Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a loo
     "sku": "PISTOL",
     "type": "weapon",
     "price": 20,
-    "quantity": 10
+    "quantity": 5
   }
 ]'
 
@@ -39,19 +39,13 @@ Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a loo
     "sku": "FIRE",
     "type": "fire",
     "price": 10,
-    "quantity": 10,
-    "compatible": [
-      "weapon", "armor", "other"
-    ]
+    "quantity": 2
   }, 
   {
     "sku": "EARTH",
     "type": "earth",
     "price": 10,
-    "quantity": 10,
-    "compatible": [
-      "weapon", "armor", "other"
-    ]
+    "quantity": 2
   }
 ]'
 
@@ -60,13 +54,13 @@ Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a loo
     "sku": "FIRE",
     "type": "fire",
     "price": 10,
-    "qty": 3
+    "qty": 2
   },
   {
     "sku": "EARTH",
     "type": "earth",
     "price": 10,
-    "qty": 3
+    "qty": 2
   }
 ]
 
@@ -140,9 +134,35 @@ Later, Nicholas the Dawg enters a new battle against an EARTH enemey and wants a
 
 1. call POST/recommendations/recommend to get rec. 
 2. call POST/recommendations/swap to swap. 
+3. call GET/catalog to see that items have been swapped.
+
+# Testing Results 
 
 1. curl -X 'POST' \
-  'http://127.0.0.1:8000/recommendations/recommend?budget=90&enemy_element=EARTH' \
+  'http://127.0.0.1:8000/recommendations/recommend' \
+  -H 'accept: application/json' \
+  -H 'access_token: armory' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "customer": {
+    "name": "Nicholas the Dawg",
+    "role": "WARRIOR"
+  },
+  "specs": {
+    "budget": 200,
+    "enemy_element": "EARTH"
+  }
+}'
+
+{
+  "Rec. Weapon": "FIRE_PISTOL",
+  "Rec. Armor": "NA",
+  "Rec. Other": "NA",
+  "Total Cost": 45
+}
+
+2. curl -X 'POST' \
+  'http://127.0.0.1:8000/recommendations/swap?weapon=true&armor=false&other=false' \
   -H 'accept: application/json' \
   -H 'access_token: armory' \
   -H 'Content-Type: application/json' \
@@ -152,10 +172,34 @@ Later, Nicholas the Dawg enters a new battle against an EARTH enemey and wants a
 }'
 
 {
-  "Rec. Weapon": "FIRE_PISTOL",
-  "Rec. Armor": "NA",
-  "Rec. Other": "NA",
-  "Total Cost": 45
+  "Swapped": "EARTH_PISTOL for FIRE_PISTOL"
 }
-2. TODO
 
+
+3. curl -X 'GET' \
+  'http://127.0.0.1:8000/catalog/' \
+  -H 'accept: application/json'
+
+[
+  {
+    "sku": "PISTOL",
+    "type": "weapon",
+    "mod": "BASIC",
+    "price": 25,
+    "qty": 1
+  },
+  {
+    "sku": "FIRE_PISTOL",
+    "type": "weapon",
+    "mod": "FIRE",
+    "price": 45,
+    "qty": 1
+  },
+  {
+    "sku": "EARTH_PISTOL",
+    "type": "weapon",
+    "mod": "EARTH",
+    "price": 50,
+    "qty": 2
+  }
+]
