@@ -39,6 +39,7 @@ def attach_mods():
 
             mod_catalog = connection.execute(sqlalchemy.text("""SELECT mods_plan.id, mods_plan.sku, mods_plan.type, sum(qty_change) AS quantity 
                                                             FROM mods_ledger JOIN mods_plan ON mods_ledger.mod_id = mods_plan.id 
+                                                            WHERE SKU <> 'BASIC'
                                                             GROUP BY mods_plan.id, mods_plan.sku, mods_plan.type"""))
         
             # Rows saved as dictionaries of all items eligible to be modded
