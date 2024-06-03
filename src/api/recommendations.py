@@ -297,7 +297,7 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
             # Completes the return of the customer's weapon to Fallen Stars Armory
             connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change, customer_id) 
                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""), 
-                                [{"qty_change":1, "item_id":details[0], "item_sku":inventory[0][1], "credit_change":-details[1], "customer_id":inventory[0][2]}])
+                                [{"qty_change":1, "item_id":details.id, "item_sku":inventory[0][1], "credit_change":-details.price, "customer_id":inventory[0][2]}])
             old.append(inventory[0][1])
             new.append(rec_skus.recent_w_rec)        
             # Stages the recommended weapon to be checked out
@@ -315,7 +315,7 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
             # Completes the return of the customer's armor to Fallen Stars Armory
             connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change, customer_id) 
                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""), 
-                                [{"qty_change":1, "item_id":details[0], "item_sku":inventory[1][1], "credit_change":-details[1], "customer_id":inventory[1][2]}])
+                                [{"qty_change":1, "item_id":details.id, "item_sku":inventory[1][1], "credit_change":-details.price, "customer_id":inventory[1][2]}])
             old.append(inventory[1][1])
             new.append(rec_skus.recent_a_rec)
             # Stages the recommended armor to be checked out
@@ -333,9 +333,9 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
             # Completes the return of the customer's armor to Fallen Stars Armory
             connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change, customer_id) 
                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""), 
-                                [{"qty_change":1, "item_id":details[0], "item_sku":inventory[2][1], "credit_change":-details[1], "customer_id":inventory[2][2]}])
+                                [{"qty_change":1, "item_id":details.id, "item_sku":inventory[2][1], "credit_change":-details.price, "customer_id":inventory[2][2]}])
             old.append(inventory[2][1])
-            new.append(rec_skus.recent_0_rec)
+            new.append(rec_skus.recent_o_rec)
             # Stages the recommended other to be checked out
             checkout_list.append(CheckoutItem(item_sku=rec_skus.recent_o_rec, qty=1))
 
