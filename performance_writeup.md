@@ -1,24 +1,23 @@
 Fake Data Modeling
-
+  
 python file that creates fake rows: populate.py
-
+  
 We decided to distribute the million rows by having 200,000 rows in “customers,” 400,000 entries in the “items_ledger,” and 400,000 entries in the “mods_ledger.” We chose these values because we wanted to simulate item and modification purchases from our shopkeeper and transactions from our customers. Also, while 200,000 unique customers seems like a lot, we have a lot of items to sell so with this set of fake data it is logical to have a lot of people show up to our shop. Furthermore, we did not add any rows to “items_plan” or “mods_plan” because our code never adds to the list of possible items that we can sell and the modifications that we apply to those items.
-
-
-
+  
+  
+  
 Performance Results of Hitting Endpoints
 
 Catalog.py: 203.768ms  
-
 Checkout.py: 13.076 ms  
 Items.py: 129.646 ms  
 Mods.py: 185.044 ms  
 Recommendations.py: 288.828 ms  
-
-
-
+  
+  
+  
 Performance Tuning
-
+  
  - catalog.py:
 
     SELECT items_plan.id AS "item_id", items_plan.sku AS "item_sku", items_plan.type AS "type",
