@@ -68,7 +68,7 @@ def checkout(customer:Customer, checkout_items: list[CheckoutItem]):
 
     # NOTE: to make sure that we have enough inventory for purchase
     qty_sql = '''
-    SELECT SUM(qty_change)
+    SELECT COALESCE(SUM(qty_change), 0)
     FROM items_ledger
     WHERE item_id = :item_id
     '''
