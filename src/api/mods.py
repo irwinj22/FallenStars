@@ -31,7 +31,7 @@ def attach_mods():
         with db.engine.begin() as connection:
             base_items = connection.execute(sqlalchemy.text("""SELECT item_id, item_sku, type, SUM(qty_change) AS qty_change FROM items_ledger
                                             JOIN items_plan ON items_ledger.item_id = items_plan.id
-                                            WHERE items_plan.mod_id = 0 and items_ledger.customer_id = 0
+                                            WHERE items_plan.mod_id = 0 and (items_ledger.customer_id = 0 or items_ledger.customer_id is null)
                                             GROUP BY item_id, item_sku, type
                                             HAVING SUM(qty_change) > 0"""))
             
@@ -56,10 +56,10 @@ def attach_mods():
                 quantity = mod.quantity
                 for item in base_items_dict:
                     # If there are mods that are available and we have weapons to mod, add them!
-                    if quantity != 0 and item["qty_change"] > 0: 
+                    if quantity > 0 and item["qty_change"] > 0: 
                         used_item = item.copy()
                         # Attach until we run out of weapons or mods.
-                        used_item["qty_change"] = -1*min(abs(item["qty_change"]), abs(mod.quantity)) 
+                        used_item["qty_change"] = -1*min(item["qty_change"], quantity) 
                         used_item["credit_change"] = 0 
                         # Dictionary row to add to the ledger
                         final_items += [{"qty_change": -1*used_item["qty_change"], 
