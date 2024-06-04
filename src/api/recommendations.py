@@ -32,8 +32,8 @@ class CustomerSpecs(BaseModel):
     enemy_element: Literal["FIRE", "EARTH", "WATER"]
 
 def cosine_distance(v1, v2):
-    v1 = np.array(v1) * np.array([0.001, 1, 1])
-    v2 = np.array(v2) * np.array([0.001, 1, 1])
+    v1 = np.array(v1) * np.array([0.0001, 1, 1])
+    v2 = np.array(v2) * np.array([0.0001, 1, 1])
     dot_product = np.dot(v1, v2)
     norm_v1 = np.linalg.norm(v1)
     norm_v2 = np.linalg.norm(v2)
@@ -53,7 +53,7 @@ def recommend(customer:Customer, specs:CustomerSpecs):
         WHERE name = :name AND role = :role
         '''
 
-        id = connection.execute(sqlalchemy.text(sql), [{"name":customer.name.title(), "role":customer.role.title()}]).scalar()
+        id = connection.execute(sqlalchemy.text(sql), [{"name":customer.name.title(), "role":customer.role.upper()}]).scalar()
 
         # if not, then create a new record and use THAT id .. 
         if id is None:
@@ -62,7 +62,7 @@ def recommend(customer:Customer, specs:CustomerSpecs):
             returning id
             '''
             try:
-                id = connection.execute(sqlalchemy.text(sql), [{"name":customer.name.title(), "role":customer.role.title()}]).scalar()
+                id = connection.execute(sqlalchemy.text(sql), [{"name":customer.name.title(), "role":customer.role.upper()}]).scalar()
             except sqlalchemy.exc.SQLAlchemyError as e: 
                 raise HTTPException(status_code=400, detail="Invalid name")
 
@@ -85,19 +85,6 @@ def recommend(customer:Customer, specs:CustomerSpecs):
                         }
         
         object_type = role_map.get(customer.role.upper(),3)
-
-        if object_type == 1:
-            w_budget = int(specs.budget*0.5)
-            a_budget = int(specs.budget*0.25)
-            m_budget = int(specs.budget*0.25)
-        elif object_type == 2:
-            w_budget = int(specs.budget*0.25)
-            a_budget = int(specs.budget*0.5)
-            m_budget = int(specs.budget*0.25)
-        else:
-            w_budget = int(specs.budget*0.25)
-            a_budget = int(specs.budget*0.25)
-            m_budget = int(specs.budget*0.5)
 
         # Offensively speaking, water beats Fire
         # Earth beats Water
@@ -123,12 +110,27 @@ def recommend(customer:Customer, specs:CustomerSpecs):
         
         w_element = enemy_element_attack_map.get(specs.enemy_element.upper(), 0)
         a_element = enemy_element_defense_map.get(specs.enemy_element.upper(), 0)
-        m_element = random.randint(0, 3)
+
+        if object_type == 1:
+            w_budget = int(specs.budget*0.5)
+            a_budget = int(specs.budget*0.25)
+            m_budget = int(specs.budget*0.25)
+            m_element = w_element
+        elif object_type == 2:
+            w_budget = int(specs.budget*0.25)
+            a_budget = int(specs.budget*0.5)
+            m_budget = int(specs.budget*0.25)
+            m_element = a_element
+        else:
+            w_budget = int(specs.budget*0.25)
+            a_budget = int(specs.budget*0.25)
+            m_budget = int(specs.budget*0.5)
+            m_element = 0
 
         w_given_vec = [w_budget, w_element, 1]
         a_given_vec = [a_budget, a_element, 2]
         m_given_vec = [m_budget, m_element, 3]
-        
+        print(a_given_vec)
 
 
         # Stores a list of all weapon item vectors that we have in our item plan where we have at least one of those items in stock
@@ -281,8 +283,9 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
         # Access the skus of the items we recommended to the user
         rec_skus = connection.execute(sqlalchemy.text("""SELECT recent_w_rec, recent_a_rec, recent_o_rec FROM customers 
                                                WHERE name = :x"""), [{"x":customer.name.title()}]).fetchone()
+        print(rec_skus)
         
-        if not rec_skus: 
+        if rec_skus.recent_w_rec is None and rec_skus.recent_a_rec is None and rec_skus.recent_o_rec is None: 
                 raise HTTPException(status_code=404, detail=f"No previous recommendations found for {customer.name.title()}")
         
         # If the customer wants to swap their weapon...
@@ -305,8 +308,6 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
 
         # If the customer wants to swap their armor...
         if armor and rec_skus.recent_a_rec != "NA" and inventory[1][1] != rec_skus.recent_a_rec:
-            # if not results[0]:
-                # raise HTTPException(status_code=404, detail=f"No armor found in the inventory for customer {customer.name.title()}")
             
             # Accesses the id and price from items_plan of the armor that the customer has in their inventory
             details = connection.execute(sqlalchemy.text("""SELECT id, price FROM items_plan
@@ -323,8 +324,6 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
 
         # If the customer wants to swap their "other item"...
         if other and rec_skus.recent_o_rec != "NA" and inventory[2][1] != rec_skus.recent_o_rec:
-            # if not results[1]:
-                # raise HTTPException(status_code=404, detail=f"No misc. items found in the inventory for customer {customer.name.title()}")
             
             # Accesses the id and price from items_plan of the armor that the customer has in their inventory
             details = connection.execute(sqlalchemy.text("""SELECT id, price FROM items_plan

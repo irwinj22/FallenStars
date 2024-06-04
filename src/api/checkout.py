@@ -44,7 +44,7 @@ def checkout(customer:Customer, checkout_items: list[CheckoutItem]):
         WHERE name = :name AND role = :role
         '''
 
-        id = connection.execute(sqlalchemy.text(sql), [{"name":customer.name.title(), "role":customer.role.title()}]).scalar()
+        id = connection.execute(sqlalchemy.text(sql), [{"name":customer.name.title(), "role":customer.role.upper()}]).scalar()
 
         # if not, then create a new record and use THAT id .. 
         if id is None:
@@ -52,7 +52,7 @@ def checkout(customer:Customer, checkout_items: list[CheckoutItem]):
             INSERT INTO customers (name, role) VALUES (:name, :role)
             returning id
             '''
-            id = connection.execute(sqlalchemy.text(sql), [{"name":customer.name.title(), "role":customer.role.title()}]).scalar()
+            id = connection.execute(sqlalchemy.text(sql), [{"name":customer.name.title(), "role":customer.role.upper()}]).scalar()
 
     # NOW, make insertion into ledger for each type of item that was bought
     sql = '''
@@ -68,7 +68,7 @@ def checkout(customer:Customer, checkout_items: list[CheckoutItem]):
 
     # NOTE: to make sure that we have enough inventory for purchase
     qty_sql = '''
-    SELECT SUM(qty_change)
+    SELECT COALESCE(SUM(qty_change), 0)
     FROM items_ledger
     WHERE item_id = :item_id
     '''
