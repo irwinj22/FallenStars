@@ -8,11 +8,12 @@ We decided to distribute the million rows by having 200,000 rows in “customers
 
 Performance Results of Hitting Endpoints
 
-Catalog.py: 203.768ms
-Checkout.py: 13.076 ms
-Items.py: 129.646 ms
-Mods.py: 185.044 ms
-Recommendations.py: 288.828 ms
+Catalog.py: 203.768ms  
+
+Checkout.py: 13.076 ms  
+Items.py: 129.646 ms  
+Mods.py: 185.044 ms  
+Recommendations.py: 288.828 ms  
 
 
 
