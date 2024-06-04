@@ -53,7 +53,7 @@ def recommend(customer:Customer, specs:CustomerSpecs):
         WHERE name = :name AND role = :role
         '''
 
-        id = connection.execute(sqlalchemy.text(sql), [{"name":customer.name.title(), "role":customer.role.title()}]).scalar()
+        id = connection.execute(sqlalchemy.text(sql), [{"name":customer.name.title(), "role":customer.role.upper()}]).scalar()
 
         # if not, then create a new record and use THAT id .. 
         if id is None:
@@ -62,7 +62,7 @@ def recommend(customer:Customer, specs:CustomerSpecs):
             returning id
             '''
             try:
-                id = connection.execute(sqlalchemy.text(sql), [{"name":customer.name.title(), "role":customer.role.title()}]).scalar()
+                id = connection.execute(sqlalchemy.text(sql), [{"name":customer.name.title(), "role":customer.role.upper()}]).scalar()
             except sqlalchemy.exc.SQLAlchemyError as e: 
                 raise HTTPException(status_code=400, detail="Invalid name")
 
