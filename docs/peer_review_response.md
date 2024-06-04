@@ -24,7 +24,7 @@
 9. Carts has been deleted, but total number of connections has been reduced as much as possible.
 10. Repeat code within catalog has been reduced by offering only items. 
 11. More comments have been made throughout the entire program. 
-12. parameter binding variables have been made more specific. 
+12. Parameter binding variables have been made more specific. 
 
 # Code Review Comments: Matthew Province
 1. Syntax has been made more consistent with all-uppercase sql keywords.
@@ -83,7 +83,7 @@
 
 # Product Ideas: Jeffer Ng
 1. This is a good idea, but the feedback has been rejected because we feel that it would be too difficult to implement within our timeframe. 
-2. This is also a good idea. It has been implemented, in part, with our "swap" endpoint. 
+2. This is also a good idea. It has been implemented, at least partially, with our "swap" endpoint. 
 
 # Product Ideas: Matthew Province. 
 1. No, the endpoint was not fully implemented at the time. However, we have moved away from rentals because we felt that recommendations was a better complex endpoint. 
