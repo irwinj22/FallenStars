@@ -42,6 +42,7 @@ def cosine_distance(v1, v2):
 # TODO: have to validate budget, enemy_element 
 @router.post("/recommend")
 def recommend(customer:Customer, specs:CustomerSpecs):
+    total_price = 0
     '''
     Recommend purchases to customers. 
     '''
@@ -108,9 +109,12 @@ def recommend(customer:Customer, specs:CustomerSpecs):
         "BASIC": 0
                         }
         
+        # Create the variables for the mapped element value
+        # The misc (other) element value will be mapped dependent on the role of the customer
         w_element = enemy_element_attack_map.get(specs.enemy_element.upper(), 0)
         a_element = enemy_element_defense_map.get(specs.enemy_element.upper(), 0)
 
+        # Allocate the budget uniquely depending on the priorities of the role of the customer
         if object_type == 1:
             w_budget = int(specs.budget*0.5)
             a_budget = int(specs.budget*0.25)
@@ -130,7 +134,6 @@ def recommend(customer:Customer, specs:CustomerSpecs):
         w_given_vec = [w_budget, w_element, 1]
         a_given_vec = [a_budget, a_element, 2]
         m_given_vec = [m_budget, m_element, 3]
-        print(a_given_vec)
 
 
         # Stores a list of all weapon item vectors that we have in our item plan where we have at least one of those items in stock
@@ -139,8 +142,7 @@ def recommend(customer:Customer, specs:CustomerSpecs):
                                                             WHERE items_plan.type = :x
                                                             GROUP BY item_vec
                                                             HAVING SUM(qty_change) > 0"""), [{"x":"weapon"}])
-        total_price = 0
-        # if w_item_vecs is not None:
+        # if there are weapons in inventory, continue; else set the recommended weapon as NA:
         if w_item_vecs.rowcount > 0:
             # Set cosine distance is worst possible
             min_dist = 2
@@ -149,6 +151,7 @@ def recommend(customer:Customer, specs:CustomerSpecs):
                 if cosine_distance(row.item_vec, w_given_vec) < min_dist:
                     min_dist = cosine_distance(row.item_vec, w_given_vec)
                     w_rec_vec = row.item_vec
+            # Get the info on the vector we are recommending
             info1 = connection.execute(sqlalchemy.text("""SELECT sku, price FROM items_plan 
                                                         WHERE item_vec = :x"""), [{"x":w_rec_vec}]).fetchone()
             rec_weapon_sku = info1.sku
@@ -162,8 +165,6 @@ def recommend(customer:Customer, specs:CustomerSpecs):
                                                             WHERE items_plan.type = :x
                                                             GROUP BY item_vec
                                                             HAVING SUM(qty_change) > 0"""), [{"x":"armor"}])
-        # this is still running even when empty ... the comparison is not working
-        # if a_item_vecs is not None:
         if a_item_vecs.rowcount > 0:
             min_dist = 2
             for row in a_item_vecs:
@@ -219,7 +220,7 @@ def recommend(customer:Customer, specs:CustomerSpecs):
                 rec_other_sku = "NA"
                 total_price -= info3.price
         
-        
+        # Update the most recent recommendations for the customer
         connection.execute(sqlalchemy.text("""UPDATE customers SET recent_w_rec = :x, recent_a_rec = :y, recent_o_rec = :z
                                            WHERE name = :w"""), [{"x":rec_weapon_sku, "y": rec_armor_sku, "z":rec_other_sku, "w": customer.name.title()}])
         
@@ -261,6 +262,7 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
         if not results:
             raise HTTPException(status_code=404, detail=f"No items found in the inventory for customer {customer.name.title()}")
         
+        # Handles the logic of whether or not the customer has items to be able to swap
         for row in results:
             if row.type == 'weapon' and temp_weapon == False:
                 temp_weapon = True
@@ -283,15 +285,12 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
         # Access the skus of the items we recommended to the user
         rec_skus = connection.execute(sqlalchemy.text("""SELECT recent_w_rec, recent_a_rec, recent_o_rec FROM customers 
                                                WHERE name = :x"""), [{"x":customer.name.title()}]).fetchone()
-        print(rec_skus)
         
         if rec_skus.recent_w_rec is None and rec_skus.recent_a_rec is None and rec_skus.recent_o_rec is None: 
                 raise HTTPException(status_code=404, detail=f"No previous recommendations found for {customer.name.title()}")
         
         # If the customer wants to swap their weapon...
         if weapon and rec_skus.recent_w_rec != "NA" and inventory[0][1] != rec_skus.recent_w_rec:
-            # if not results[2]:
-                # raise HTTPException(status_code=404, detail=f"No weapons found in the inventory for customer {customer.name.title()}")
             
             # Accesses the id and price from items_plan of the weapon that the customer has in their inventory
             details = connection.execute(sqlalchemy.text("""SELECT id, price FROM items_plan
@@ -301,12 +300,13 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
             connection.execute(sqlalchemy.text("""INSERT INTO items_ledger (qty_change, item_id, item_sku, credit_change, customer_id) 
                                                VALUES (:qty_change, :item_id, :item_sku, :credit_change, :customer_id)"""), 
                                 [{"qty_change":1, "item_id":details.id, "item_sku":inventory[0][1], "credit_change":-details.price, "customer_id":inventory[0][2]}])
+            # Adds the customer's item that they are returning and their new item to respective lists to be referenced in the return statement
             old.append(inventory[0][1])
             new.append(rec_skus.recent_w_rec)        
             # Stages the recommended weapon to be checked out
             checkout_list.append(CheckoutItem(item_sku=rec_skus.recent_w_rec, qty=1))
 
-        # If the customer wants to swap their armor...
+        # If the customer wants to swap their armor...repeat a similar process as above
         if armor and rec_skus.recent_a_rec != "NA" and inventory[1][1] != rec_skus.recent_a_rec:
             
             # Accesses the id and price from items_plan of the armor that the customer has in their inventory
@@ -345,6 +345,6 @@ def swap(customer:Customer, weapon:bool, armor:bool, other:bool):
         raise HTTPException(status_code=404, detail="Checkout failed, please contact Fallen Stars")
     if not old and not new:
         return {"Swapped": "Nothing"}
-    
+    # Returns what items are being swapped for which items
     result_string = ', '.join(old) + " for " + ', '.join(new)
     return {"Swapped": result_string}
