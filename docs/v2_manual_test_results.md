@@ -1,12 +1,21 @@
 # Example workflow 1 
 Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a look at the weapons offerings and purchase 5 pistols. Then, we look at the mods and purchase 2 FIRE and 2 EARTH. Finally, we attach all the modifiers to weapons. 
 
+1. Call POST/populate (ONCE) to populate datebase with necessary information (REQUIRED).
 1. Call POST/items/purchase/items to purchase the pistols.
 2. Call POST/mods/purchase/mods to purchase the modifications. 
 3. Call POST/mods/attach/mods to attach the modifications to the weapons.
 
 # Testing results
-1. curl -X 'POST' \
+1. 
+curl -X 'POST' \
+  'http://127.0.0.1:8000/populate/' \
+  -H 'accept: application/json' \
+  -d ''
+
+"OK" 
+
+2. curl -X 'POST' \
   'http://127.0.0.1:8000/items/purchase/items' \
   -H 'accept: application/json' \
   -H 'access_token: armory' \
@@ -29,7 +38,7 @@ Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a loo
   }
 ]
 
-2. curl -X 'POST' \
+3. curl -X 'POST' \
   'http://127.0.0.1:8000/mods/purchase/mods' \
   -H 'accept: application/json' \
   -H 'access_token: armory' \
@@ -64,7 +73,7 @@ Nurane, our weapons dealer, offers a set of weapons and modifiers. We take a loo
   }
 ]
 
-3. curl -X 'POST' \
+4. curl -X 'POST' \
   'http://127.0.0.1:8000/mods/attach/mods' \
   -H 'accept: application/json' \
   -H 'access_token: armory' \
@@ -130,7 +139,7 @@ Nicholas the Dawg wants to buy a new EARTH PISTOL to show off to his friends. So
 “OK”
 
 # Example Workflow 3
-Later, Nicholas the Dawg enters a new battle against an EARTH enemey and wants a recommendation as to what weapon he should buy. So, he get a recommendation of a FIRE_PISTOL and then swaps his EARTH_PISTOL for a FIRE_PISTOL. 
+Later, Nicholas the Dawg enters a new battle against an EARTH enemey and wants a recommendation as to what weapon he should buy. So, he get a recommendation of a FIRE_PISTOL (FIRE beats EARTH offensively) and then swaps his EARTH_PISTOL for a FIRE_PISTOL. 
 
 1. call POST/recommendations/recommend to get rec. 
 2. call POST/recommendations/swap to swap. 
@@ -174,6 +183,8 @@ Later, Nicholas the Dawg enters a new battle against an EARTH enemey and wants a
 {
   "Swapped": "EARTH_PISTOL for FIRE_PISTOL"
 }
+
+NOTE: "weapon" set to TRUE, "armor" and "other" set to FALSE
 
 
 3. curl -X 'GET' \
